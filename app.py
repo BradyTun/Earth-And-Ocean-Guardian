@@ -31,9 +31,15 @@ def resolve_database_uri() -> str:
     database_url = os.getenv("DATABASE_URL", "").strip()
     if database_url:
         if database_url.startswith("postgres://"):
-            # Render can provide a legacy Postgres scheme not accepted by SQLAlchemy.
+            # Render/Vercel can provide a legacy Postgres scheme not accepted by SQLAlchemy.
             database_url = database_url.replace("postgres://", "postgresql://", 1)
         return database_url
+
+    # Serverless platforms such as Vercel expose a read-only filesystem except
+    # for /tmp, so keep the fallback SQLite database there. This storage is
+    # ephemeral, so set DATABASE_URL to a managed Postgres for durable data.
+    if os.getenv("VERCEL"):
+        return "sqlite:////tmp/animals.db"
 
     return f"sqlite:///{DATABASE_PATH.as_posix()}"
 
@@ -1373,20 +1379,18 @@ def ensure_seed_data_for_web() -> None:
     if _seed_checked:
         return
 
-    inspector = inspect(db.engine)
-    table_names = set(inspector.get_table_names())
-    required_tables = {
-        "animals",
-        "organizations",
-        "announcements",
-        "products",
-        "donations",
-        "orders",
-        "order_items",
-        "chat_messages",
-    }
-    if required_tables.issubset(table_names):
+    # Serverless hosts such as Vercel never run "flask db upgrade" as a build
+    # step, so create any missing tables and seed baseline data on the first
+    # request instead. The work is idempotent and is guarded for the lifetime of
+    # the warm instance by _seed_checked.
+    try:
+        db.create_all()
         seed_database(force=False)
+    except Exception:
+        # A parallel cold start may be performing the same setup; roll back and
+        # retry on a later request rather than poisoning this instance.
+        db.session.rollback()
+        return
     _seed_checked = True
 
 

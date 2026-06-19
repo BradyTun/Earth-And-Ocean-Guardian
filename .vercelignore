@@ -1,0 +1,17 @@
+# Local Python environment and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+
+# Local SQLite databases (Vercel uses Postgres via DATABASE_URL, or ephemeral /tmp)
+*.db
+*.sqlite3
+
+# Local-only files
+.env
+.env.*
+.git/
+.vscode/
