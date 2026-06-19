@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Earth and Ocean Guardian | Order Confirmation{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-4xl" data-reveal>
+    <article class="glass-panel p-8 md:p-10">
+        <p class="eyebrow">Order Confirmed</p>
+        <h1 class="mt-2 font-display text-4xl md:text-5xl">Thank you for your impact purchase</h1>
+        <p class="mt-3 text-slate-100/90">Your order has been recorded and conservation allocation has been reserved for partner initiatives.</p>
+
+        <div class="mt-6 grid gap-4 md:grid-cols-2">
+            <div class="rounded-xl border border-white/15 bg-white/5 p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">Order ID</p>
+                <p class="mt-2 text-lg font-semibold">#{{ order.id }}</p>
+            </div>
+            <div class="rounded-xl border border-white/15 bg-white/5 p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">Order Total</p>
+                <p class="mt-2 text-lg font-semibold">{{ order.total_cents|money }}</p>
+            </div>
+            <div class="rounded-xl border border-white/15 bg-white/5 p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">Conservation Allocation</p>
+                <p class="mt-2 text-lg font-semibold text-gold">{{ order.contribution_cents|money }}</p>
+            </div>
+            <div class="rounded-xl border border-white/15 bg-white/5 p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">Organization</p>
+                <p class="mt-2 text-lg font-semibold">{{ order.organization.name if order.organization else "Auto Allocation" }}</p>
+            </div>
+        </div>
+
+        <div class="mt-7 flex flex-wrap gap-3">
+            <a href="{{ url_for('shop') }}" class="btn-primary">Continue shopping</a>
+            <a href="{{ url_for('organizations') }}" class="btn-secondary">Review organizations</a>
+            <a href="{{ url_for('assistant_page') }}" class="btn-secondary">Ask AI assistant</a>
+        </div>
+    </article>
+</section>
+{% endblock %}

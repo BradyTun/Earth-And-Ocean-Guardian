@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Earth and Ocean Guardian | Eco Impact Shop{% endblock %}
+
+{% block content %}
+<section class="surface-commerce" data-reveal>
+    <span class="commerce-tag"><svg class="icon"><use href="#i-bag"></use></svg>Impact Commerce</span>
+    <h1 class="mt-3 font-display text-4xl md:text-5xl">Eco-friendly products that fund conservation organizations</h1>
+    <p class="mt-3 max-w-3xl text-slate-100/90">30% of every order is allocated to partner organizations working on endangered species and habitat recovery.</p>
+
+    <form method="get" class="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-white/12 bg-black/15 p-4 md:p-5">
+        <span class="hidden items-center gap-2 text-sm text-slate-100/80 sm:inline-flex"><svg class="icon"><use href="#i-filter"></use></svg>Filter</span>
+        <label class="min-w-[200px] flex-1">
+            <span class="sr-only">Category</span>
+            <select name="category" class="field-input">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit" class="btn-primary">Apply</button>
+        <a href="{{ url_for('shop') }}" class="btn-secondary">Reset</a>
+    </form>
+</section>
+
+<section class="mt-8" data-reveal>
+    {% if products %}
+    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {% for product in products %}
+        <article class="product-card">
+            <a href="{{ url_for('product_detail', slug=product.slug) }}" class="feature-media block h-56">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="feature-img">
+            </a>
+            <div class="product-body p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">{{ product.category }}</p>
+                <h2 class="mt-2 font-display text-3xl leading-tight">
+                    <a href="{{ url_for('product_detail', slug=product.slug) }}" class="hover:text-gold">{{ product.name }}</a>
+                </h2>
+                <p class="mt-2 text-sm text-slate-100/85">{{ product.description }}</p>
+                <p class="mt-2 inline-flex items-start gap-1.5 text-sm text-gold"><svg class="icon"><use href="#i-leaf"></use></svg>{{ product.impact_note }}</p>
+                <div class="mt-4 flex items-center justify-between gap-3">
+                    <p class="price-tag text-2xl"><svg class="icon icon-lg"><use href="#i-tag"></use></svg>{{ product.price_cents|money }}</p>
+                    {% if product.stock_quantity <= 0 %}
+                    <span class="stock-pill is-out"><svg class="icon"><use href="#i-info"></use></svg>Out of stock</span>
+                    {% elif product.stock_quantity <= 5 %}
+                    <span class="stock-pill is-low"><svg class="icon"><use href="#i-truck"></use></svg>Only {{ product.stock_quantity }} left</span>
+                    {% else %}
+                    <span class="stock-pill"><svg class="icon"><use href="#i-check"></use></svg>In stock</span>
+                    {% endif %}
+                </div>
+                <div class="mt-auto pt-4">
+                    {% if product.stock_quantity > 0 %}
+                    <form method="post" action="{{ url_for('cart_add', product_id=product.id) }}" class="js-add-to-cart flex items-center gap-2">
+                        <div class="qty-stepper" data-qty-stepper>
+                            <button type="button" data-qty-decrement aria-label="Decrease quantity"><svg class="icon"><use href="#i-minus"></use></svg></button>
+                            <input type="number" name="quantity" min="1" max="{{ product.stock_quantity }}" value="1" aria-label="Quantity">
+                            <button type="button" data-qty-increment aria-label="Increase quantity"><svg class="icon"><use href="#i-plus"></use></svg></button>
+                        </div>
+                        <button type="submit" class="btn-primary flex-1"><svg class="icon"><use href="#i-cart"></use></svg>Add to cart</button>
+                    </form>
+                    {% else %}
+                    <button type="button" class="btn-primary w-full" disabled>Out of stock</button>
+                    {% endif %}
+                    <a href="{{ url_for('product_detail', slug=product.slug) }}" class="mini-link mt-3">View details<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <article class="glass-panel p-8 text-center">
+        <h2 class="font-display text-3xl">No products in this category</h2>
+        <p class="mt-3 text-slate-100/80">Try resetting the filter to see all available products.</p>
+        <a href="{{ url_for('shop') }}" class="btn-secondary mt-5 inline-flex">Show all products</a>
+    </article>
+    {% endif %}
+</section>
+{% endblock %}

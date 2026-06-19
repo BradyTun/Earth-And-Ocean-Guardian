@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Earth and Ocean Guardian | Species Explorer{% endblock %}
+
+{% block content %}
+<section class="space-y-6">
+    <div data-reveal>
+        <p class="eyebrow"><svg class="icon"><use href="#i-paw"></use></svg>Species Explorer</p>
+        <h1 class="mt-2 font-display text-4xl md:text-5xl">Endangered Animal Database</h1>
+        <p class="mt-3 max-w-3xl text-slate-100/90">Filter by habitat and conservation status to study where extinction pressure is highest.</p>
+    </div>
+
+    <form method="get" class="glass-panel grid gap-3 p-4 md:grid-cols-4 md:p-5" data-reveal>
+        <label class="md:col-span-2">
+            <span class="sr-only">Search animals</span>
+            <input
+                type="text"
+                name="search"
+                value="{{ filters.search }}"
+                placeholder="Search by species, region, or threat"
+                class="field-input"
+            >
+        </label>
+
+        <label>
+            <span class="sr-only">Habitat</span>
+            <select name="habitat" class="field-input">
+                <option value="">All habitats</option>
+                {% for habitat_option in habitats %}
+                <option value="{{ habitat_option }}" {% if filters.habitat == habitat_option %}selected{% endif %}>{{ habitat_option }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span class="sr-only">Conservation status</span>
+            <select name="status" class="field-input">
+                <option value="">All statuses</option>
+                {% for status_option in statuses %}
+                <option value="{{ status_option }}" {% if filters.status == status_option %}selected{% endif %}>{{ status_option }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <button type="submit" class="btn-primary">Apply filters</button>
+        <a href="{{ url_for('animals') }}" class="btn-secondary text-center">Reset</a>
+    </form>
+
+    <p class="text-sm text-slate-100/80" data-reveal>{{ animals|length }} animal profiles found</p>
+
+    {% if animals %}
+    <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {% for animal in animals %}
+        {% set status_class = "bg-rose-600 text-white" if animal.conservation_status == "Critically Endangered" else "bg-gold text-midnight" %}
+        <article class="feature-card" data-reveal>
+            <div class="feature-media h-56">
+                <img src="{{ animal.image_url }}" alt="{{ animal.common_name }}" class="feature-img">
+                <span class="absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide {{ status_class }}">{{ animal.conservation_status }}</span>
+            </div>
+
+            <div class="p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">{{ animal.species_group }}</p>
+                <h2 class="mt-2 font-display text-3xl leading-tight">{{ animal.common_name }}</h2>
+                <p class="mt-1 italic text-slate-100/80">{{ animal.scientific_name }}</p>
+                <p class="mt-3 text-sm text-slate-100/85">Habitat: {{ animal.habitat }}</p>
+                <p class="mt-1 text-sm text-slate-100/75">Region: {{ animal.region }}</p>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                    {% for threat in animal.threats_list[:2] %}
+                    <span class="rounded-full border border-ember/40 bg-ember/10 px-3 py-1 text-xs text-ember">{{ threat }}</span>
+                    {% endfor %}
+                </div>
+
+                <a href="{{ url_for('animal_detail', animal_id=animal.id) }}" class="mini-link mt-5">View full profile<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <article class="glass-panel p-8 text-center" data-reveal>
+        <h2 class="font-display text-3xl">No profile matches your filters</h2>
+        <p class="mt-3 text-slate-100/80">Try broader keywords or reset filter selections to view all species.</p>
+        <a href="{{ url_for('animals') }}" class="btn-secondary mt-5 inline-flex">Reset filters</a>
+    </article>
+    {% endif %}
+</section>
+{% endblock %}

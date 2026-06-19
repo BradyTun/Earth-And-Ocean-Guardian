@@ -1,0 +1,24 @@
+We are making a website using below tech stack
+
+Frontend
+- HTML
+- CSS
+- JS
+
+Backend
+- Python (Flask)
+
+We will use SQL database (Sqlite)
+we will write it in monolithic (flask app with templates)
+
+
+Website Description:
+Our wibsite is the one where you can study about endanger 
+animals and what factors are puting them into the endanger zone.
+ You can also learn about how you can help them in this website.
+ You can see the animals specific species and their habitats and 
+ also their photo.
+
+User Interface tips:
+We will make the user interface as beautiful and modern as possible
+with beautiful animations , we will use tailwind CSS.

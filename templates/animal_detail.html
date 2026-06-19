@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Earth and Ocean Guardian | {{ animal.common_name }}{% endblock %}
+
+{% block content %}
+<section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]" data-reveal>
+    <article class="glass-panel overflow-hidden">
+        <div class="relative h-80 overflow-hidden md:h-[28rem]">
+            <img src="{{ animal.image_url }}" alt="{{ animal.common_name }}" class="h-full w-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-midnight/90 via-midnight/30 to-transparent"></div>
+            <div class="absolute bottom-4 left-4 right-4">
+                <span class="status-pill">{{ animal.conservation_status }}</span>
+                <h1 class="mt-3 font-display text-4xl md:text-5xl">{{ animal.common_name }}</h1>
+                <p class="mt-2 italic text-slate-100/85">{{ animal.scientific_name }}</p>
+            </div>
+        </div>
+
+        <div class="grid gap-4 p-5 md:grid-cols-2 md:p-6">
+            <div>
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">Species Group</p>
+                <p class="mt-2 text-lg font-semibold">{{ animal.species_group }}</p>
+            </div>
+            <div>
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">Habitat</p>
+                <p class="mt-2 text-lg font-semibold">{{ animal.habitat }}</p>
+            </div>
+            <div class="md:col-span-2">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">Region</p>
+                <p class="mt-2 text-lg font-semibold">{{ animal.region }}</p>
+            </div>
+            <div class="md:col-span-2">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">Population Trend</p>
+                <p class="mt-2 text-lg text-slate-100/90">{{ animal.population_trend }}</p>
+            </div>
+            <div class="md:col-span-2 flex flex-wrap gap-3">
+                <a href="{{ url_for('organizations') }}" class="btn-secondary">Donate to partner organizations</a>
+                <a href="{{ url_for('shop') }}" class="btn-secondary">Shop eco products</a>
+            </div>
+        </div>
+    </article>
+
+    <aside class="space-y-6">
+        <article class="glass-panel p-5 md:p-6" data-reveal>
+            <h2 class="font-display text-3xl">Threat factors</h2>
+            <ul class="mt-4 space-y-3">
+                {% for threat in animal.threats_list %}
+                <li class="rounded-xl border border-ember/35 bg-ember/10 px-4 py-3 text-slate-100">{{ threat }}</li>
+                {% endfor %}
+            </ul>
+        </article>
+
+        <article class="glass-panel p-5 md:p-6" data-reveal>
+            <h2 class="font-display text-3xl">Action recommendations</h2>
+            <ul class="mt-4 space-y-3">
+                {% for tip in animal.help_list %}
+                <li class="rounded-xl border border-lime/35 bg-lime/10 px-4 py-3 text-slate-100">{{ tip }}</li>
+                {% endfor %}
+            </ul>
+        </article>
+    </aside>
+</section>
+
+<section class="mt-12" data-reveal>
+    <div class="section-head">
+        <h2 class="font-display text-3xl md:text-4xl">Related species in similar habitats</h2>
+        <a href="{{ url_for('animals') }}" class="btn-secondary">Back to explorer</a>
+    </div>
+
+    {% if related_animals %}
+    <div class="mt-6 grid gap-5 md:grid-cols-3">
+        {% for related in related_animals %}
+        <article class="feature-card overflow-hidden">
+            <div class="feature-media h-44">
+                <img src="{{ related.image_url }}" alt="{{ related.common_name }}" class="feature-img">
+            </div>
+            <div class="p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">{{ related.species_group }}</p>
+                <h3 class="mt-2 font-display text-2xl">{{ related.common_name }}</h3>
+                <p class="mt-2 text-sm text-slate-100/80">{{ related.habitat }}</p>
+                <a href="{{ url_for('animal_detail', animal_id=related.id) }}" class="mini-link mt-4">Open profile</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <article class="glass-panel mt-6 p-6 text-center">
+        <p class="text-slate-100/80">No related profiles available for this habitat yet.</p>
+    </article>
+    {% endif %}
+</section>
+{% endblock %}

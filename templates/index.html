@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Earth and Ocean Guardian | Conservation Platform{% endblock %}
+
+{% block content %}
+<section class="hero-wrap" data-reveal>
+    <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+    <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
+
+    <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <div>
+            <p class="eyebrow">Live SDG Impact Platform</p>
+            <h1 class="mt-4 font-display text-4xl leading-tight md:text-6xl">Learn endangered species. Fund real-world recovery through donations and eco commerce.</h1>
+            <p class="mt-5 max-w-2xl text-lg text-slate-100/90">
+                Study threatened wildlife, support verified conservation organizations, and purchase eco-friendly products where revenue directly contributes to SDG-aligned impact.
+            </p>
+            <div class="mt-8 flex flex-wrap gap-3">
+                <a href="{{ url_for('animals') }}" class="btn-primary"><svg class="icon"><use href="#i-paw"></use></svg>Study species now</a>
+                <a href="{{ url_for('organizations') }}" class="btn-secondary"><svg class="icon"><use href="#i-heart"></use></svg>Support organizations</a>
+                <a href="{{ url_for('shop') }}" class="btn-secondary"><svg class="icon"><use href="#i-bag"></use></svg>Shop for impact</a>
+            </div>
+        </div>
+
+        <aside class="hero-stats">
+            <article class="stat-block">
+                <p>Species Profiles</p>
+                <strong class="counter" data-count="{{ stats.total_animals }}">0</strong>
+            </article>
+            <article class="stat-block">
+                <p>Partner Organizations</p>
+                <strong class="counter" data-count="{{ stats.total_organizations }}">0</strong>
+            </article>
+            <article class="stat-block">
+                <p>Eco Products</p>
+                <strong class="counter" data-count="{{ stats.total_products }}">0</strong>
+            </article>
+            <article class="stat-block">
+                <p>Total Funds Mobilized</p>
+                <strong>{{ stats.total_support_cents|money }}</strong>
+            </article>
+        </aside>
+    </div>
+</section>
+
+<section class="mt-12 grid gap-5 md:grid-cols-3" data-reveal>
+    <article class="info-card">
+        <div class="icon-badge"><svg class="icon icon-lg"><use href="#i-book"></use></svg></div>
+        <p class="info-tag mt-3">01 Education</p>
+        <h2 class="font-display text-2xl">Species intelligence</h2>
+        <p class="mt-3 text-sm text-slate-100/85">Use habitat, status, and threat data to understand extinction pressure with actionable context.</p>
+    </article>
+    <article class="info-card">
+        <div class="icon-badge icon-badge-gold"><svg class="icon icon-lg"><use href="#i-heart"></use></svg></div>
+        <p class="info-tag mt-3">02 Funding</p>
+        <h2 class="font-display text-2xl">Transparent support</h2>
+        <p class="mt-3 text-sm text-slate-100/85">Donate directly to partner organizations and track their announcements and active initiatives.</p>
+    </article>
+    <article class="info-card">
+        <div class="icon-badge icon-badge-ember"><svg class="icon icon-lg"><use href="#i-bag"></use></svg></div>
+        <p class="info-tag mt-3">03 Commerce</p>
+        <h2 class="font-display text-2xl">Purposeful buying</h2>
+        <p class="mt-3 text-sm text-slate-100/85">Purchase eco products. A fixed share of every order is allocated to conservation programs.</p>
+    </article>
+</section>
+
+<section class="mt-14" data-reveal>
+    <div class="section-head">
+        <span class="section-title-row"><span class="icon-badge"><svg class="icon"><use href="#i-paw"></use></svg></span><h2 class="font-display text-3xl md:text-4xl">Featured endangered animals</h2></span>
+        <a href="{{ url_for('animals') }}" class="btn-secondary">View all species<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+    </div>
+
+    <div class="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {% for animal in featured_animals %}
+        <article class="feature-card group">
+            <div class="feature-media">
+                <img src="{{ animal.image_url }}" alt="{{ animal.common_name }}" class="feature-img">
+                <span class="status-pill">{{ animal.conservation_status }}</span>
+            </div>
+            <div class="p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-lime">{{ animal.species_group }}</p>
+                <h3 class="mt-2 font-display text-2xl">{{ animal.common_name }}</h3>
+                <p class="mt-2 text-sm text-slate-100/80">{{ animal.habitat }} | {{ animal.region }}</p>
+                <a href="{{ url_for('animal_detail', animal_id=animal.id) }}" class="mini-link mt-4">Open profile<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="mt-14" data-reveal>
+    <div class="section-head">
+        <span class="section-title-row"><span class="icon-badge icon-badge-gold"><svg class="icon"><use href="#i-leaf"></use></svg></span><h2 class="font-display text-3xl md:text-4xl">Organizations advancing SDG conservation</h2></span>
+        <a href="{{ url_for('organizations') }}" class="btn-secondary">Explore organizations<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+    </div>
+
+    <div class="mt-6 grid gap-5 md:grid-cols-3">
+        {% for org in featured_organizations %}
+        <article class="org-card">
+            <div class="org-media">
+                <img src="{{ org.image_url }}" alt="{{ org.name }}" class="h-full w-full object-cover">
+            </div>
+            <div class="p-4">
+                <p class="text-xs uppercase tracking-[0.14em] text-gold">{{ org.focus_area }}</p>
+                <h3 class="mt-2 font-display text-2xl">{{ org.name }}</h3>
+                <p class="mt-2 text-sm text-slate-100/80">{{ org.about }}</p>
+                <a href="{{ url_for('organization_detail', slug=org.slug) }}" class="mini-link mt-4">Read profile and donate<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="mt-14" data-reveal>
+    <div class="surface-commerce">
+        <div class="section-head">
+            <span class="section-title-row">
+                <span class="icon-badge icon-badge-ember"><svg class="icon"><use href="#i-bag"></use></svg></span>
+                <span>
+                    <span class="commerce-tag"><svg class="icon"><use href="#i-tag"></use></svg>Impact Shop</span>
+                    <h2 class="mt-2 font-display text-3xl md:text-4xl">Eco-friendly products funding impact</h2>
+                </span>
+            </span>
+            <a href="{{ url_for('shop') }}" class="btn-secondary">Browse full shop<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+        </div>
+
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {% for product in featured_products %}
+            <article class="product-card">
+                <a href="{{ url_for('product_detail', slug=product.slug) }}" class="feature-media block">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="feature-img">
+                </a>
+                <div class="product-body p-4">
+                    <p class="text-xs uppercase tracking-[0.14em] text-lime">{{ product.category }}</p>
+                    <h3 class="mt-2 font-display text-2xl leading-tight">
+                        <a href="{{ url_for('product_detail', slug=product.slug) }}" class="hover:text-gold">{{ product.name }}</a>
+                    </h3>
+                    <p class="mt-2 text-sm text-slate-100/80">{{ product.impact_note }}</p>
+                    <p class="price-tag mt-3 text-lg"><svg class="icon"><use href="#i-tag"></use></svg>{{ product.price_cents|money }}</p>
+                    <form method="post" action="{{ url_for('cart_add', product_id=product.id) }}" class="js-add-to-cart mt-3">
+                        <button type="submit" class="btn-primary w-full"><svg class="icon"><use href="#i-cart"></use></svg>Add to cart</button>
+                    </form>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="mt-14" data-reveal>
+    <div class="section-head">
+        <span class="section-title-row"><span class="icon-badge icon-badge-gold"><svg class="icon"><use href="#i-calendar"></use></svg></span><h2 class="font-display text-3xl md:text-4xl">Latest partner announcements</h2></span>
+        <a href="{{ url_for('organizations') }}" class="btn-secondary">See all updates<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+    </div>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-3">
+        {% for announcement in latest_announcements %}
+        <article class="announcement-card">
+            <p class="announce-meta text-xs uppercase tracking-[0.14em] text-gold"><svg class="icon"><use href="#i-leaf"></use></svg>{{ announcement.organization.name }}</p>
+            <h3 class="mt-2 font-display text-2xl leading-tight">{{ announcement.title }}</h3>
+            <p class="mt-3 text-sm text-slate-100/85">{{ announcement.body }}</p>
+            <p class="announce-date text-xs"><svg class="icon"><use href="#i-calendar"></use></svg>{{ announcement.published_at|human_date }}</p>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

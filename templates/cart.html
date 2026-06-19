@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Earth and Ocean Guardian | Cart{% endblock %}
+
+{% block content %}
+<section data-reveal>
+    <span class="commerce-tag"><svg class="icon"><use href="#i-cart"></use></svg>Checkout Preparation</span>
+    <h1 class="mt-3 font-display text-4xl md:text-5xl">Your impact cart</h1>
+</section>
+
+<section class="mt-8" data-reveal>
+    {% if cart["items"] %}
+    <div class="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <div class="space-y-4">
+            {% for item in cart["items"] %}
+            <article class="glass-panel p-4 md:p-5">
+                <div class="grid gap-4 md:grid-cols-[140px_1fr]">
+                    <div class="h-32 overflow-hidden rounded-xl border border-white/15">
+                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="h-full w-full object-cover">
+                    </div>
+                    <div>
+                        <h2 class="font-display text-2xl">
+                            <a href="{{ url_for('product_detail', slug=item.product.slug) }}" class="hover:text-gold">{{ item.product.name }}</a>
+                        </h2>
+                        <p class="mt-2 text-sm text-slate-100/82">{{ item.product.impact_note }}</p>
+                        <p class="price-tag mt-2 text-sm"><svg class="icon"><use href="#i-tag"></use></svg>Unit price: {{ item.unit_price_cents|money }}</p>
+
+                        <div class="mt-4 flex flex-wrap items-center gap-2">
+                            <form method="post" action="{{ url_for('cart_update', product_id=item.product.id) }}" class="flex items-center gap-2">
+                                <div class="qty-stepper" data-qty-stepper>
+                                    <button type="button" data-qty-decrement aria-label="Decrease quantity"><svg class="icon"><use href="#i-minus"></use></svg></button>
+                                    <input type="number" name="quantity" min="0" max="{{ item.product.stock_quantity }}" value="{{ item.quantity }}" aria-label="Quantity">
+                                    <button type="button" data-qty-increment aria-label="Increase quantity"><svg class="icon"><use href="#i-plus"></use></svg></button>
+                                </div>
+                                <button type="submit" class="btn-secondary"><svg class="icon"><use href="#i-check"></use></svg>Update</button>
+                            </form>
+                            <form method="post" action="{{ url_for('cart_remove', product_id=item.product.id) }}">
+                                <button type="submit" class="btn-secondary"><svg class="icon"><use href="#i-trash"></use></svg>Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <aside class="surface-commerce h-fit">
+            <h2 class="section-title-row font-display text-3xl"><span class="icon-badge icon-badge-gold"><svg class="icon"><use href="#i-shield"></use></svg></span>Order summary</h2>
+            <div class="mt-4 space-y-2 text-sm text-slate-100/85">
+                <p class="flex items-center justify-between"><span>Subtotal</span><strong>{{ cart["subtotal_cents"]|money }}</strong></p>
+                <p class="flex items-center justify-between"><span>Conservation allocation (30%)</span><strong class="text-lime">{{ contribution_cents|money }}</strong></p>
+                <p class="flex items-center justify-between text-base text-gold"><span>Total</span><strong>{{ cart["subtotal_cents"]|money }}</strong></p>
+            </div>
+
+            <a href="{{ url_for('checkout') }}" class="btn-primary mt-5 w-full"><svg class="icon"><use href="#i-shield"></use></svg>Proceed to checkout</a>
+            <a href="{{ url_for('shop') }}" class="btn-secondary mt-3 w-full"><svg class="icon"><use href="#i-bag"></use></svg>Continue shopping</a>
+        </aside>
+    </div>
+    {% else %}
+    <article class="glass-panel p-8 text-center">
+        <h2 class="font-display text-3xl">Your cart is empty</h2>
+        <p class="mt-3 text-slate-100/80">Add eco products from the shop to begin funding conservation programs.</p>
+        <a href="{{ url_for('shop') }}" class="btn-primary mt-5 inline-flex"><svg class="icon"><use href="#i-bag"></use></svg>Open shop</a>
+    </article>
+    {% endif %}
+</section>
+{% endblock %}
