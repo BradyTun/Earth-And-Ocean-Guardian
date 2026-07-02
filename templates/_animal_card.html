@@ -1,0 +1,15 @@
+<article class="feature-card group">
+    <a href="{{ url_for('animal_detail', animal_id=animal.id) }}" class="critter-media accent-{{ animal.accent }} block">
+        <span class="critter-emoji" aria-hidden="true">{{ animal.emoji }}</span>
+        <span class="status-pill status-{{ animal.conservation_status|lower|replace(' ', '-') }}">{{ animal.conservation_status }}</span>
+    </a>
+    <div class="p-4">
+        <p class="text-xs uppercase tracking-[0.14em] text-leaf-deep font-bold">{{ animal.species_group }}</p>
+        <h3 class="mt-2 font-display text-2xl leading-tight">
+            <a href="{{ url_for('animal_detail', animal_id=animal.id) }}" class="hover:text-sky-deep">{{ animal.common_name }}</a>
+        </h3>
+        <p class="mt-1 text-sm italic text-ink-soft">{{ animal.scientific_name }}</p>
+        <p class="mt-3 flex items-center gap-1 text-sm text-ink-soft"><svg class="icon"><use href="#i-pin"></use></svg>{{ animal.habitat }}</p>
+        <a href="{{ url_for('animal_detail', animal_id=animal.id) }}" class="mini-link mt-4">Learn about me<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+    </div>
+</article>

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Animal Quiz | Earth and Ocean Guardian{% endblock %}
+
+{% block content %}
+<section class="quiz-shell">
+    <div class="page-head text-center" data-reveal>
+        <p class="eyebrow mx-auto">&#11088; Quiz Time</p>
+        <h1 class="mt-3 font-display text-4xl md:text-5xl">Become an Animal Hero!</h1>
+        <p class="mt-3 mx-auto max-w-xl text-ink-soft">Answer fun questions about land and ocean animals. There is no losing here &mdash; every question helps you learn something new! &#127881;</p>
+    </div>
+
+    <div class="quiz-card mt-6" data-reveal>
+        <div id="quizApp" aria-live="polite">
+            <div class="quiz-result">
+                <div class="quiz-emoji-big">&#129423;</div>
+                <p class="mt-3 font-display text-2xl">Loading your quiz...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="application/json" id="quizData">{{ quiz_questions|tojson }}</script>
+</section>
+{% endblock %}

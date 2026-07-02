@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+import json
 import os
 from pathlib import Path
 import re
 from typing import Any
+from urllib import error as urllib_error, request as urllib_request
 from uuid import uuid4
 
 from flask import (
@@ -23,8 +25,44 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func, inspect, or_
 
+from seed_data import (
+    ALL_ANIMALS,
+    LAND_ANIMALS,
+    OCEAN_ANIMALS,
+    QUIZ_QUESTIONS,
+    SAMPLE_ANNOUNCEMENTS,
+    SAMPLE_ORGANIZATIONS,
+    SAMPLE_PRODUCTS,
+)
+
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE_PATH = BASE_DIR / "animals.db"
+
+
+def load_local_env(env_path: Path) -> None:
+    """Load KEY=VALUE pairs from a local .env file into os.environ.
+
+    Existing environment variables win, so real deployment secrets are never
+    overwritten. This keeps the OpenRouter key out of source control without
+    adding a python-dotenv dependency.
+    """
+    if not env_path.exists():
+        return
+    try:
+        for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+    except OSError:
+        return
+
+
+load_local_env(BASE_DIR / ".env")
 
 
 def resolve_database_uri() -> str:
@@ -49,6 +87,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "change-this-secret-in-production")
 app.config["SHOP_CONTRIBUTION_RATE"] = Decimal("0.30")
+app.config["OPENROUTER_BASE_URL"] = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/")
+app.config["OPENROUTER_API_KEY"] = os.getenv("OPENROUTER_API_KEY", "").strip()
+app.config["OPENROUTER_MODEL"] = os.getenv("OPENROUTER_MODEL", "openai/gpt-4.1-mini").strip()
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -62,13 +103,20 @@ class Animal(db.Model):
     common_name = db.Column(db.String(120), nullable=False, unique=True)
     scientific_name = db.Column(db.String(180), nullable=False)
     species_group = db.Column(db.String(80), nullable=False)
+    realm = db.Column(db.String(20), nullable=False, default="Land")
     conservation_status = db.Column(db.String(80), nullable=False)
     habitat = db.Column(db.String(120), nullable=False)
-    region = db.Column(db.String(160), nullable=False)
+    region = db.Column(db.String(200), nullable=False)
     threats = db.Column(db.Text, nullable=False)
+    human_activities = db.Column(db.Text, nullable=False, default="")
+    ecological_role = db.Column(db.Text, nullable=False, default="")
     how_to_help = db.Column(db.Text, nullable=False)
     population_trend = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.Text, nullable=False)
+    fun_fact = db.Column(db.Text, nullable=False, default="")
+    why_endangered = db.Column(db.Text, nullable=False, default="")
+    emoji = db.Column(db.String(16), nullable=False, default="\U0001F43E")
+    accent = db.Column(db.String(20), nullable=False, default="leaf")
+    image_url = db.Column(db.Text, nullable=False, default="")
 
 
 class Organization(db.Model):
@@ -235,253 +283,6 @@ class ChatMessage(db.Model):
     )
 
 
-SAMPLE_ANIMALS: list[dict[str, str]] = [
-    {
-        "common_name": "Amur Leopard",
-        "scientific_name": "Panthera pardus orientalis",
-        "species_group": "Mammal",
-        "conservation_status": "Critically Endangered",
-        "habitat": "Temperate Forest",
-        "region": "Russian Far East and Northeast China",
-        "threats": "Habitat fragmentation|Poaching|Decline of natural prey",
-        "how_to_help": "Support anti-poaching patrols|Choose deforestation-free products|Fund ranger training initiatives",
-        "population_trend": "Fewer than 120 adults remain in the wild",
-        "image_url": "https://images.unsplash.com/photo-1598755257130-c2aaca1f061c?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "common_name": "Vaquita",
-        "scientific_name": "Phocoena sinus",
-        "species_group": "Marine Mammal",
-        "conservation_status": "Critically Endangered",
-        "habitat": "Coastal Marine Waters",
-        "region": "Northern Gulf of California, Mexico",
-        "threats": "Illegal gillnets|Bycatch in fisheries|Tiny population size",
-        "how_to_help": "Promote sustainable seafood choices|Support gillnet-free fishing programs|Advocate for stronger marine enforcement",
-        "population_trend": "Estimated fewer than 10 individuals",
-        "image_url": "https://images.unsplash.com/photo-1568430462989-44163eb1752f?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "common_name": "Hawksbill Sea Turtle",
-        "scientific_name": "Eretmochelys imbricata",
-        "species_group": "Reptile",
-        "conservation_status": "Critically Endangered",
-        "habitat": "Coral Reefs",
-        "region": "Tropical Atlantic, Pacific, and Indian Oceans",
-        "threats": "Illegal shell trade|Coral reef degradation|Plastic pollution",
-        "how_to_help": "Avoid single-use plastics|Support reef restoration programs|Never buy tortoiseshell products",
-        "population_trend": "Severe nesting declines across many beaches",
-        "image_url": "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "common_name": "Sumatran Orangutan",
-        "scientific_name": "Pongo abelii",
-        "species_group": "Mammal",
-        "conservation_status": "Critically Endangered",
-        "habitat": "Tropical Rainforest",
-        "region": "Sumatra, Indonesia",
-        "threats": "Palm oil expansion|Forest fires|Illegal pet trade",
-        "how_to_help": "Buy certified sustainable palm oil|Donate to reforestation groups|Support wildlife rescue centers",
-        "population_trend": "Population continues to decline in fragmented forests",
-        "image_url": "https://images.unsplash.com/photo-1516637090014-cb1ab0d08fc7?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "common_name": "Black Rhino",
-        "scientific_name": "Diceros bicornis",
-        "species_group": "Mammal",
-        "conservation_status": "Critically Endangered",
-        "habitat": "Savanna and Shrubland",
-        "region": "Eastern and Southern Africa",
-        "threats": "Poaching for horn trade|Habitat loss|Political instability",
-        "how_to_help": "Back community-led conservation projects|Fund anti-poaching technology|Travel responsibly with eco-certified safaris",
-        "population_trend": "Recovering slowly but still highly vulnerable",
-        "image_url": "https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "common_name": "Snow Leopard",
-        "scientific_name": "Panthera uncia",
-        "species_group": "Mammal",
-        "conservation_status": "Vulnerable",
-        "habitat": "Mountain Ecosystems",
-        "region": "Central and South Asia",
-        "threats": "Retaliatory killing|Habitat degradation|Climate change",
-        "how_to_help": "Support predator-friendly livestock programs|Reduce carbon footprint|Invest in mountain habitat protection",
-        "population_trend": "Estimated 4,000 to 6,500 in fragmented ranges",
-        "image_url": "https://images.unsplash.com/photo-1530767910492-78b3dbaaf6d1?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "common_name": "Philippine Eagle",
-        "scientific_name": "Pithecophaga jefferyi",
-        "species_group": "Bird",
-        "conservation_status": "Critically Endangered",
-        "habitat": "Primary Rainforest",
-        "region": "Philippines",
-        "threats": "Deforestation|Hunting|Slow reproduction rates",
-        "how_to_help": "Protect old-growth forests|Support eagle nest monitoring|Promote forest-friendly livelihoods",
-        "population_trend": "Only a few hundred breeding pairs remain",
-        "image_url": "https://images.unsplash.com/photo-1591198936750-16d8e15edb9b?auto=format&fit=crop&w=1200&q=80",
-    },
-    {
-        "common_name": "African Penguin",
-        "scientific_name": "Spheniscus demersus",
-        "species_group": "Bird",
-        "conservation_status": "Endangered",
-        "habitat": "Rocky Coastlines",
-        "region": "Namibia and South Africa",
-        "threats": "Overfishing|Oil spills|Rising ocean temperatures",
-        "how_to_help": "Support marine protected areas|Donate to seabird rescue groups|Choose responsibly sourced seafood",
-        "population_trend": "Population has dropped by over 90 percent in a century",
-        "image_url": "https://images.unsplash.com/photo-1551986782-d0169b3f8fa7?auto=format&fit=crop&w=1200&q=80",
-    },
-]
-
-SAMPLE_ORGANIZATIONS: list[dict[str, Any]] = [
-    {
-        "name": "Blue Reef Alliance",
-        "slug": "blue-reef-alliance",
-        "about": "Blue Reef Alliance restores coral ecosystems and protects endangered marine life through science-led coastal programs.",
-        "mission": "Advance SDG 14 by rebuilding reef habitats, reducing bycatch, and improving community-led marine stewardship.",
-        "focus_area": "SDG 14 - Life Below Water",
-        "country": "Indonesia",
-        "website_url": "https://www.bluereefalliance.org",
-        "contact_email": "team@bluereefalliance.org",
-        "image_url": "https://images.unsplash.com/photo-1498623116890-37e912163d5d?auto=format&fit=crop&w=1200&q=80",
-        "is_featured": True,
-    },
-    {
-        "name": "Forest Shield Collective",
-        "slug": "forest-shield-collective",
-        "about": "Forest Shield Collective protects biodiversity corridors where threatened mammals and birds depend on intact rainforest.",
-        "mission": "Advance SDG 15 by safeguarding forests, supporting rangers, and restoring native habitat links.",
-        "focus_area": "SDG 15 - Life on Land",
-        "country": "Brazil",
-        "website_url": "https://www.forestshieldcollective.org",
-        "contact_email": "hello@forestshieldcollective.org",
-        "image_url": "https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1200&q=80",
-        "is_featured": True,
-    },
-    {
-        "name": "Wildlife Rescue Network",
-        "slug": "wildlife-rescue-network",
-        "about": "Wildlife Rescue Network rehabilitates injured animals, trains rapid-response teams, and supports conflict prevention.",
-        "mission": "Protect vulnerable species by combining emergency rescue, field medicine, and conservation education.",
-        "focus_area": "Species Recovery and Community Action",
-        "country": "Kenya",
-        "website_url": "https://www.wildliferescuenetwork.org",
-        "contact_email": "care@wildliferescuenetwork.org",
-        "image_url": "https://images.unsplash.com/photo-1516934024742-b461fba47600?auto=format&fit=crop&w=1200&q=80",
-        "is_featured": True,
-    },
-]
-
-SAMPLE_ANNOUNCEMENTS: list[dict[str, Any]] = [
-    {
-        "organization_slug": "blue-reef-alliance",
-        "title": "Community reef nursery reaches 12,000 coral fragments",
-        "body": "Our latest restoration season expanded reef nurseries across three islands and improved fish habitat density by 18 percent.",
-        "is_pinned": True,
-    },
-    {
-        "organization_slug": "blue-reef-alliance",
-        "title": "Gillnet replacement pilot launched with local fishers",
-        "body": "New safer gear pilot reduces bycatch risk for turtles and porpoises while preserving fisher income.",
-        "is_pinned": False,
-    },
-    {
-        "organization_slug": "forest-shield-collective",
-        "title": "Eight new wildlife camera corridors activated",
-        "body": "Monitoring corridors now track jaguars, tapirs, and forest birds to guide anti-fragmentation action.",
-        "is_pinned": True,
-    },
-    {
-        "organization_slug": "forest-shield-collective",
-        "title": "Community firebreak training completed in 14 villages",
-        "body": "Training reduced dry-season fire spread near critical nesting zones and improved emergency coordination.",
-        "is_pinned": False,
-    },
-    {
-        "organization_slug": "wildlife-rescue-network",
-        "title": "Mobile rescue clinics expanded to northern districts",
-        "body": "Field teams now provide faster treatment and relocation support for elephants and large carnivores.",
-        "is_pinned": False,
-    },
-    {
-        "organization_slug": "wildlife-rescue-network",
-        "title": "Anti-snare patrol equipment fully funded",
-        "body": "Donor-backed grants equipped patrol teams with drones, thermal optics, and emergency veterinary kits.",
-        "is_pinned": True,
-    },
-]
-
-SAMPLE_PRODUCTS: list[dict[str, Any]] = [
-    {
-        "name": "Ocean-Safe Reusable Bottle",
-        "slug": "ocean-safe-reusable-bottle",
-        "description": "Double-wall stainless steel bottle designed to replace single-use plastics for daily hydration.",
-        "impact_note": "Every purchase funds coastal cleanup and marine species monitoring.",
-        "category": "Daily Essentials",
-        "price_cents": 2800,
-        "stock_quantity": 120,
-        "image_url": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=1200&q=80",
-        "is_active": True,
-    },
-    {
-        "name": "Bamboo Field Notebook",
-        "slug": "bamboo-field-notebook",
-        "description": "FSC-certified bamboo fiber notebook for study notes, expedition journals, and planning conservation campaigns.",
-        "impact_note": "Revenue supports forest ranger training and habitat corridor mapping.",
-        "category": "Stationery",
-        "price_cents": 1600,
-        "stock_quantity": 240,
-        "image_url": "https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?auto=format&fit=crop&w=1200&q=80",
-        "is_active": True,
-    },
-    {
-        "name": "Solar Trail Lantern",
-        "slug": "solar-trail-lantern",
-        "description": "Compact solar-powered lantern with low-energy LED output for camping, patrol work, and emergency use.",
-        "impact_note": "A share of profits funds wildlife-safe night patrols in protected areas.",
-        "category": "Outdoor Gear",
-        "price_cents": 3900,
-        "stock_quantity": 80,
-        "image_url": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=1200&q=80",
-        "is_active": True,
-    },
-    {
-        "name": "Compostable Kitchen Wrap Set",
-        "slug": "compostable-kitchen-wrap-set",
-        "description": "Plant-based wraps to replace disposable cling film and reduce household waste.",
-        "impact_note": "Purchase helps fund urban conservation education programs.",
-        "category": "Home",
-        "price_cents": 2200,
-        "stock_quantity": 130,
-        "image_url": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80",
-        "is_active": True,
-    },
-    {
-        "name": "Refillable Eco Cleaning Kit",
-        "slug": "refillable-eco-cleaning-kit",
-        "description": "Reusable spray bottles and concentrated tablets that reduce plastic waste from cleaning products.",
-        "impact_note": "Supports community restoration projects near endangered habitats.",
-        "category": "Home",
-        "price_cents": 3400,
-        "stock_quantity": 95,
-        "image_url": "https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=1200&q=80",
-        "is_active": True,
-    },
-    {
-        "name": "Fairtrade Organic Cotton Tote",
-        "slug": "fairtrade-organic-cotton-tote",
-        "description": "Durable organic cotton tote for shopping and travel, reducing dependence on disposable bags.",
-        "impact_note": "Each order contributes directly to species recovery organizations.",
-        "category": "Daily Essentials",
-        "price_cents": 1800,
-        "stock_quantity": 210,
-        "image_url": "https://images.unsplash.com/photo-1597484661643-2f5fef640dd3?auto=format&fit=crop&w=1200&q=80",
-        "is_active": True,
-    },
-]
-
-
 def cents_to_money(cents: int) -> str:
     amount = Decimal(cents) / Decimal("100")
     return f"${amount:,.2f}"
@@ -597,33 +398,57 @@ def split_pipe(text: str) -> list[str]:
     return [item.strip() for item in text.split("|") if item.strip()]
 
 
+def sdg_connection_for(realm: str) -> dict[str, str]:
+    if realm == "Ocean":
+        return {
+            "primary": "SDG 14 - Life Below Water",
+            "text": "Keeping this animal safe helps the whole ocean stay healthy and full of life (SDG 14). Learning and sharing its story is part of Quality Education (SDG 4).",
+        }
+    return {
+        "primary": "SDG 15 - Life on Land",
+        "text": "Protecting this animal helps forests, grasslands and other land habitats stay healthy (SDG 15). Learning and sharing its story is part of Quality Education (SDG 4).",
+    }
+
+
 def serialize_animal(animal: Animal) -> dict[str, Any]:
     return {
         "id": animal.id,
         "common_name": animal.common_name,
         "scientific_name": animal.scientific_name,
         "species_group": animal.species_group,
+        "realm": animal.realm,
         "conservation_status": animal.conservation_status,
         "habitat": animal.habitat,
         "region": animal.region,
         "threats": animal.threats,
+        "human_activities": animal.human_activities,
+        "ecological_role": animal.ecological_role,
         "how_to_help": animal.how_to_help,
         "population_trend": animal.population_trend,
+        "fun_fact": animal.fun_fact,
+        "why_endangered": animal.why_endangered,
+        "emoji": animal.emoji,
+        "accent": animal.accent,
         "image_url": animal.image_url,
         "threats_list": split_pipe(animal.threats),
         "help_list": split_pipe(animal.how_to_help),
+        "sdg": sdg_connection_for(animal.realm),
     }
 
 
 def query_animals(
     *,
     search: str = "",
+    realm: str = "",
     habitat: str = "",
     status: str = "",
     limit: int | None = None,
     exclude_id: int | None = None,
 ) -> list[dict[str, Any]]:
     query = Animal.query
+
+    if realm:
+        query = query.filter(Animal.realm == realm)
 
     if search:
         like_query = f"%{search}%"
@@ -693,6 +518,7 @@ def get_site_stats() -> dict[str, int]:
         "total_organizations": int(total_organizations),
         "total_products": int(total_products),
         "total_support_cents": int(donation_total + contribution_total),
+        "total_quiz_questions": len(QUIZ_QUESTIONS),
     }
 
 
@@ -711,8 +537,8 @@ def seed_database(force: bool = False) -> int:
     inserted_total = 0
 
     if Animal.query.first() is None:
-        db.session.add_all([Animal(**animal_data) for animal_data in SAMPLE_ANIMALS])
-        inserted_total += len(SAMPLE_ANIMALS)
+        db.session.add_all([Animal(**animal_data) for animal_data in ALL_ANIMALS])
+        inserted_total += len(ALL_ANIMALS)
 
     if Organization.query.first() is None:
         db.session.add_all([Organization(**organization_data) for organization_data in SAMPLE_ORGANIZATIONS])
@@ -759,6 +585,137 @@ def get_chat_conversation_key() -> str:
     session["chat_conversation_key"] = conversation_key
     session.modified = True
     return conversation_key
+
+
+ASSISTANT_SYSTEM_PROMPT = (
+    "You are 'Guardian Buddy', a warm and cheerful helper on the 'Earth and Ocean Guardian' "
+    "website, which teaches children about endangered land and ocean animals and how to protect them. "
+    "Speak simply and kindly, like you are chatting with a curious 8 to 12 year old. "
+    "Use short sentences and an encouraging, hopeful tone, and you may use a few friendly emojis (not too many). "
+    "You help with endangered animals (land animals connect to SDG 15 - Life on Land, ocean animals connect to "
+    "SDG 14 - Life Below Water), why animals are in danger, simple ways kids can help, the animal quiz, the partner "
+    "organizations, and the eco-friendly shop. Use the CONTEXT provided (real data from this website) when it is "
+    "helpful, and gently point children to the Land Animals, Ocean Animals, or Quiz pages. Keep answers short, "
+    "usually under 120 words. Always stay accurate and never share scary or graphic details."
+)
+
+KID_SUGGESTIONS = [
+    "Which ocean animal is the most endangered?",
+    "How can I help save the pandas?",
+    "Tell me a fun fact about tigers!",
+    "What is SDG 14 and SDG 15?",
+]
+
+
+def build_assistant_context(message: str) -> str:
+    """Collect a small block of real site data to ground the AI answer."""
+    cleaned = re.sub(r"\s+", " ", message).strip()
+    land_count = Animal.query.filter_by(realm="Land").count()
+    ocean_count = Animal.query.filter_by(realm="Ocean").count()
+
+    lines: list[str] = [
+        f"The website has {land_count} land animals (SDG 15) and {ocean_count} ocean animals (SDG 14), "
+        "plus a fun quiz, partner organizations to support, and an eco-friendly shop.",
+    ]
+
+    animal_matches: list[Animal] = []
+    if cleaned:
+        like = f"%{cleaned}%"
+        animal_matches = (
+            Animal.query.filter(
+                or_(
+                    Animal.common_name.ilike(like),
+                    Animal.scientific_name.ilike(like),
+                    Animal.habitat.ilike(like),
+                    Animal.species_group.ilike(like),
+                    Animal.threats.ilike(like),
+                    Animal.region.ilike(like),
+                )
+            )
+            .order_by(Animal.common_name.asc())
+            .limit(5)
+            .all()
+        )
+
+    if animal_matches:
+        lines.append("Matching animals:")
+        for animal in animal_matches:
+            lines.append(
+                f"- {animal.common_name} ({animal.realm}, {animal.conservation_status}), "
+                f"home: {animal.habitat}. Why in danger: {animal.why_endangered} "
+                f"Fun fact: {animal.fun_fact}"
+            )
+
+    if cleaned:
+        org_matches = (
+            Organization.query.filter(
+                or_(
+                    Organization.name.ilike(f"%{cleaned}%"),
+                    Organization.focus_area.ilike(f"%{cleaned}%"),
+                    Organization.mission.ilike(f"%{cleaned}%"),
+                )
+            )
+            .order_by(Organization.name.asc())
+            .limit(3)
+            .all()
+        )
+        if org_matches:
+            lines.append("Matching organizations:")
+            for org in org_matches:
+                lines.append(f"- {org.name}: {org.focus_area}.")
+
+    return "\n".join(lines)
+
+
+def call_openrouter(messages: list[dict[str, str]]) -> str | None:
+    """Call the OpenRouter chat API. Returns the reply text or None on failure."""
+    api_key = app.config.get("OPENROUTER_API_KEY", "")
+    if not api_key:
+        return None
+
+    url = f"{app.config['OPENROUTER_BASE_URL']}/chat/completions"
+    body = json.dumps(
+        {
+            "model": app.config["OPENROUTER_MODEL"],
+            "messages": messages,
+            "temperature": 0.6,
+            "max_tokens": 500,
+        }
+    ).encode("utf-8")
+
+    http_request = urllib_request.Request(url, data=body, method="POST")
+    http_request.add_header("Content-Type", "application/json")
+    http_request.add_header("Authorization", f"Bearer {api_key}")
+    http_request.add_header("HTTP-Referer", "https://earth-and-ocean-guardian.vercel.app")
+    http_request.add_header("X-Title", "Earth and Ocean Guardian")
+
+    try:
+        with urllib_request.urlopen(http_request, timeout=30) as response:
+            raw = response.read().decode("utf-8")
+        data = json.loads(raw)
+        reply = str(data["choices"][0]["message"]["content"]).strip()
+    except (urllib_error.URLError, TimeoutError, OSError, ValueError, KeyError, IndexError, TypeError):
+        return None
+
+    return reply or None
+
+
+def generate_ai_reply(message: str, history: list[ChatMessage]) -> dict[str, Any]:
+    """Try the live OpenRouter model first, then fall back to the local helper."""
+    llm_messages: list[dict[str, str]] = [
+        {"role": "system", "content": ASSISTANT_SYSTEM_PROMPT},
+        {"role": "system", "content": "CONTEXT (real website data):\n" + build_assistant_context(message)},
+    ]
+    for item in history[-8:]:
+        role = "user" if item.role == "user" else "assistant"
+        llm_messages.append({"role": role, "content": item.content})
+    llm_messages.append({"role": "user", "content": message})
+
+    reply = call_openrouter(llm_messages)
+    if reply:
+        return {"reply": reply, "suggestions": KID_SUGGESTIONS[:3]}
+
+    return build_ai_reply(message)
 
 
 def build_ai_reply(message: str) -> dict[str, Any]:
@@ -917,16 +874,38 @@ def home() -> str:
 
 @app.route("/animals")
 def animals() -> str:
+    land_count = Animal.query.filter_by(realm="Land").count()
+    ocean_count = Animal.query.filter_by(realm="Ocean").count()
+    return render_template(
+        "animals_hub.html",
+        land_count=land_count,
+        ocean_count=ocean_count,
+        land_preview=query_animals(realm="Land", limit=6),
+        ocean_preview=query_animals(realm="Ocean", limit=6),
+        active_page="animals",
+        page_slug="animals",
+    )
+
+
+def _render_realm_explorer(realm: str, page_slug: str) -> str:
     search = request.args.get("search", "").strip()
     habitat = request.args.get("habitat", "").strip()
     status = request.args.get("status", "").strip()
 
-    animals_list = query_animals(search=search, habitat=habitat, status=status)
+    animals_list = query_animals(realm=realm, search=search, habitat=habitat, status=status)
 
-    habitats = [value for (value,) in db.session.query(Animal.habitat).distinct().order_by(Animal.habitat).all()]
+    habitats = [
+        value
+        for (value,) in db.session.query(Animal.habitat)
+        .filter(Animal.realm == realm)
+        .distinct()
+        .order_by(Animal.habitat)
+        .all()
+    ]
     statuses = [
         value
         for (value,) in db.session.query(Animal.conservation_status)
+        .filter(Animal.realm == realm)
         .distinct()
         .order_by(Animal.conservation_status)
         .all()
@@ -934,13 +913,24 @@ def animals() -> str:
 
     return render_template(
         "animals.html",
+        realm=realm,
         animals=animals_list,
         habitats=habitats,
         statuses=statuses,
         filters={"search": search, "habitat": habitat, "status": status},
         active_page="animals",
-        page_slug="animals",
+        page_slug=page_slug,
     )
+
+
+@app.route("/animals/land")
+def animals_land() -> str:
+    return _render_realm_explorer("Land", "animals-land")
+
+
+@app.route("/animals/ocean")
+def animals_ocean() -> str:
+    return _render_realm_explorer("Ocean", "animals-ocean")
 
 
 @app.route("/animals/<int:animal_id>")
@@ -951,10 +941,19 @@ def animal_detail(animal_id: int) -> str:
 
     animal = serialize_animal(record)
     related_animals = query_animals(
+        realm=animal["realm"],
         habitat=animal["habitat"],
         exclude_id=animal["id"],
         limit=3,
     )
+    if len(related_animals) < 3:
+        seen_ids = {animal["id"], *(item["id"] for item in related_animals)}
+        extra = [
+            item
+            for item in query_animals(realm=animal["realm"], limit=6)
+            if item["id"] not in seen_ids
+        ]
+        related_animals = (related_animals + extra)[:3]
 
     return render_template(
         "animal_detail.html",
@@ -962,6 +961,16 @@ def animal_detail(animal_id: int) -> str:
         related_animals=related_animals,
         active_page="animals",
         page_slug="animal-detail",
+    )
+
+
+@app.route("/quiz")
+def quiz() -> str:
+    return render_template(
+        "quiz.html",
+        quiz_questions=QUIZ_QUESTIONS,
+        active_page="quiz",
+        page_slug="quiz",
     )
 
 
@@ -1304,12 +1313,10 @@ def order_confirmation(order_id: int) -> str:
 
 
 @app.route("/assistant")
-def assistant_page() -> str:
-    return render_template(
-        "assistant.html",
-        active_page="assistant",
-        page_slug="assistant",
-    )
+def assistant_page():
+    # The AI helper now lives in a floating widget available on every page, so
+    # the standalone assistant page simply sends visitors back to the home page.
+    return redirect(url_for("home"))
 
 
 @app.get("/api/chat/history")
@@ -1344,6 +1351,13 @@ def chat_api():
 
     conversation_key = get_chat_conversation_key()
 
+    history = (
+        ChatMessage.query.filter_by(conversation_key=conversation_key)
+        .order_by(ChatMessage.created_at.asc())
+        .limit(10)
+        .all()
+    )
+
     user_msg = ChatMessage(
         conversation_key=conversation_key,
         role="user",
@@ -1351,7 +1365,7 @@ def chat_api():
     )
     db.session.add(user_msg)
 
-    response_data = build_ai_reply(message)
+    response_data = generate_ai_reply(message, history)
     assistant_msg = ChatMessage(
         conversation_key=conversation_key,
         role="assistant",

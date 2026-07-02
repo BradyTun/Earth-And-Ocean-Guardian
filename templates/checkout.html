@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Earth and Ocean Guardian | Checkout{% endblock %}
+{% block title %}Checkout | Earth and Ocean Guardian{% endblock %}
 
 {% block content %}
 <section data-reveal>
-    <span class="commerce-tag"><svg class="icon"><use href="#i-shield"></use></svg>Secure Checkout</span>
-    <h1 class="mt-3 font-display text-4xl md:text-5xl">Complete your impact order</h1>
-    <p class="mt-3 max-w-3xl text-slate-100/90">Your purchase is processed on-platform and {{ contribution_rate_percent }}% of order value is allocated to conservation funding.</p>
+    <span class="commerce-tag"><svg class="icon"><use href="#i-shield"></use></svg>Safe Checkout</span>
+    <h1 class="mt-3 font-display text-4xl md:text-5xl">Almost done!</h1>
+    <p class="mt-3 max-w-2xl text-ink-soft">Ask a grown-up to help fill this in. {{ contribution_rate_percent }}% of your order becomes a gift that helps animals! &#128156;</p>
 </section>
 
 <section class="mt-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]" data-reveal>
@@ -31,9 +31,9 @@
                 <textarea name="shipping_address" rows="4" required class="field-input"></textarea>
             </label>
             <label class="md:col-span-2">
-                <span class="form-label">Choose organization for allocation</span>
+                <span class="form-label">Choose a helper group for your gift</span>
                 <select name="organization_id" class="field-input">
-                    <option value="">Auto-allocate across active partners</option>
+                    <option value="">Share it across all helper groups</option>
                     {% for org in organizations %}
                     <option value="{{ org.id }}">{{ org.name }} ({{ org.focus_area }})</option>
                     {% endfor %}
@@ -52,18 +52,18 @@
         <h2 class="section-title-row font-display text-3xl"><span class="icon-badge icon-badge-gold"><svg class="icon"><use href="#i-bag"></use></svg></span>Order summary</h2>
         <ul class="mt-4 space-y-3">
             {% for item in cart["items"] %}
-            <li class="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm">
-                <p class="font-semibold">{{ item.product.name }}</p>
-                <p class="mt-1 text-slate-100/80">Qty {{ item.quantity }} x {{ item.unit_price_cents|money }}</p>
-                <p class="mt-1 text-gold">{{ item.line_total_cents|money }}</p>
+            <li class="rounded-xl border-2 border-stroke bg-cream px-4 py-3 text-sm">
+                <p class="font-bold">{{ item.product.name }}</p>
+                <p class="mt-1 text-ink-soft">Qty {{ item.quantity }} x {{ item.unit_price_cents|money }}</p>
+                <p class="mt-1 font-bold text-coral-deep">{{ item.line_total_cents|money }}</p>
             </li>
             {% endfor %}
         </ul>
 
-        <div class="mt-4 space-y-2 border-t border-white/15 pt-4 text-sm text-slate-100/85">
+        <div class="mt-4 space-y-2 border-t-2 border-stroke pt-4 text-sm text-ink-soft">
             <p class="flex items-center justify-between"><span>Subtotal</span><strong>{{ cart["subtotal_cents"]|money }}</strong></p>
-            <p class="flex items-center justify-between"><span>Conservation allocation</span><strong class="text-lime">{{ contribution_cents|money }}</strong></p>
-            <p class="flex items-center justify-between text-base text-gold"><span>Total</span><strong>{{ cart["subtotal_cents"]|money }}</strong></p>
+            <p class="flex items-center justify-between"><span>Gift for animals</span><strong class="text-leaf-deep">{{ contribution_cents|money }}</strong></p>
+            <p class="flex items-center justify-between text-base text-coral-deep"><span>Total</span><strong>{{ cart["subtotal_cents"]|money }}</strong></p>
         </div>
     </aside>
 </section>

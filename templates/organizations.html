@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Earth and Ocean Guardian | Partner Organizations{% endblock %}
+{% block title %}Helper Groups | Earth and Ocean Guardian{% endblock %}
 
 {% block content %}
-<section data-reveal>
-    <p class="eyebrow"><svg class="icon"><use href="#i-shield"></use></svg>Verified Partner Network</p>
-    <h1 class="mt-2 font-display text-4xl md:text-5xl">Organizations advancing SDG-aligned conservation goals</h1>
-    <p class="mt-3 max-w-3xl text-slate-100/90">Read about each organization, track announcements, and donate directly to fund active wildlife and habitat programs.</p>
+<section class="page-head" data-reveal>
+    <p class="eyebrow">&#128104;&#8205;&#127806; Real-Life Animal Helpers</p>
+    <h1 class="mt-3 font-display text-4xl md:text-5xl">Meet the groups that protect animals</h1>
+    <p class="mt-3 max-w-2xl text-ink-soft">These are real groups of people who work hard every day to keep animals safe. Read their stories and see how families can help too! &#128156;</p>
 </section>
 
 <section class="mt-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]" data-reveal>
@@ -17,11 +17,11 @@
                 <img src="{{ org.image_url }}" alt="{{ org.name }}" class="h-full w-full object-cover">
             </div>
             <div class="p-4">
-                <p class="text-xs uppercase tracking-[0.14em] text-gold">{{ org.focus_area }} | {{ org.country }}</p>
+                <p class="text-xs uppercase tracking-[0.14em] text-gold font-bold">{{ org.focus_area }} | {{ org.country }}</p>
                 <h2 class="mt-2 font-display text-2xl">{{ org.name }}</h2>
-                <p class="mt-3 text-sm text-slate-100/82">{{ org.about }}</p>
-                <p class="mt-3 inline-flex items-center gap-1.5 text-sm text-lime"><svg class="icon"><use href="#i-heart"></use></svg>Total support: {{ support_totals.get(org.id, 0)|money }}</p>
-                <a href="{{ url_for('organization_detail', slug=org.slug) }}" class="mini-link mt-4">Open profile and donate<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
+                <p class="mt-3 text-sm text-ink-soft">{{ org.about }}</p>
+                <p class="mt-3 inline-flex items-center gap-1.5 text-sm text-leaf-deep font-bold"><svg class="icon"><use href="#i-heart"></use></svg>Total support: {{ support_totals.get(org.id, 0)|money }}</p>
+                <a href="{{ url_for('organization_detail', slug=org.slug) }}" class="mini-link mt-4">Read more and help<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
             </div>
         </article>
         {% endfor %}
@@ -34,9 +34,9 @@
         <div class="mt-4 space-y-3">
             {% for announcement in latest_announcements %}
             <article class="announcement-card">
-                <p class="announce-meta text-xs uppercase tracking-[0.14em] text-gold"><svg class="icon"><use href="#i-leaf"></use></svg>{{ announcement.organization.name }}</p>
+                <p class="announce-meta text-xs uppercase tracking-[0.14em]"><svg class="icon"><use href="#i-leaf"></use></svg>{{ announcement.organization.name }}</p>
                 <h3 class="mt-2 font-display text-2xl leading-tight">{{ announcement.title }}</h3>
-                <p class="mt-2 text-sm text-slate-100/82">{{ announcement.body }}</p>
+                <p class="mt-2 text-sm text-ink-soft">{{ announcement.body }}</p>
                 <p class="announce-date text-xs"><svg class="icon"><use href="#i-calendar"></use></svg>{{ announcement.published_at|human_date }}</p>
             </article>
             {% endfor %}

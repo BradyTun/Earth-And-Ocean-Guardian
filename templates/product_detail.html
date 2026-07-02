@@ -6,7 +6,7 @@
 <nav class="breadcrumb" data-reveal>
     <a href="{{ url_for('shop') }}" class="inline-flex items-center gap-1"><svg class="icon"><use href="#i-bag"></use></svg>Shop</a>
     <svg class="icon"><use href="#i-arrow-right"></use></svg>
-    <span class="text-slate-100/90">{{ product.name }}</span>
+    <span class="text-ink">{{ product.name }}</span>
 </nav>
 
 <section class="mt-5 grid gap-6 lg:grid-cols-[1fr_1fr]" data-reveal>
@@ -29,21 +29,21 @@
             {% endif %}
         </div>
 
-        <p class="mt-4 text-slate-100/88">{{ product.description }}</p>
+        <p class="mt-4 text-ink-soft">{{ product.description }}</p>
 
         <div class="mt-5 grid gap-3 sm:grid-cols-2">
             <div class="detail-spec">
                 <span class="icon-badge"><svg class="icon"><use href="#i-leaf"></use></svg></span>
                 <div>
-                    <p class="text-xs uppercase tracking-[0.12em] text-slate-100/70">Conservation impact</p>
-                    <p class="text-sm font-semibold text-lime">{{ contribution_cents|money }} per unit to partners</p>
+                    <p class="text-xs uppercase tracking-[0.12em] text-ink-soft">Gift for animals</p>
+                    <p class="text-sm font-bold text-leaf-deep">{{ contribution_cents|money }} from each one</p>
                 </div>
             </div>
             <div class="detail-spec">
                 <span class="icon-badge icon-badge-gold"><svg class="icon"><use href="#i-heart"></use></svg></span>
                 <div>
-                    <p class="text-xs uppercase tracking-[0.12em] text-slate-100/70">Why it matters</p>
-                    <p class="text-sm font-semibold text-gold">{{ product.impact_note }}</p>
+                    <p class="text-xs uppercase tracking-[0.12em] text-ink-soft">Why it matters</p>
+                    <p class="text-sm font-bold text-gold">{{ product.impact_note }}</p>
                 </div>
             </div>
         </div>
@@ -62,14 +62,14 @@
         <button type="button" class="btn-primary mt-6 w-full" disabled>Currently out of stock</button>
         {% endif %}
 
-        <p class="mt-4 inline-flex items-center gap-2 text-xs text-slate-100/72"><svg class="icon"><use href="#i-shield"></use></svg>30% of this purchase is allocated to verified conservation partners.</p>
+        <p class="mt-4 inline-flex items-center gap-2 text-xs text-ink-soft"><svg class="icon"><use href="#i-shield"></use></svg>30% of this purchase becomes a gift for animal helper groups.</p>
     </div>
 </section>
 
 {% if related_products %}
 <section class="mt-14" data-reveal>
     <div class="section-head">
-        <span class="section-title-row"><span class="icon-badge icon-badge-ember"><svg class="icon"><use href="#i-bag"></use></svg></span><h2 class="font-display text-3xl">You may also support</h2></span>
+        <span class="section-title-row"><span class="icon-badge icon-badge-ember"><svg class="icon"><use href="#i-bag"></use></svg></span><h2 class="font-display text-3xl">More goodies</h2></span>
         <a href="{{ url_for('shop') }}" class="btn-secondary">Back to shop<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
     </div>
 
@@ -80,11 +80,11 @@
                 <img src="{{ related.image_url }}" alt="{{ related.name }}" class="feature-img">
             </a>
             <div class="product-body p-4">
-                <p class="text-xs uppercase tracking-[0.14em] text-lime">{{ related.category }}</p>
+                <p class="text-xs uppercase tracking-[0.14em] text-leaf-deep font-bold">{{ related.category }}</p>
                 <h3 class="mt-2 font-display text-2xl leading-tight">
-                    <a href="{{ url_for('product_detail', slug=related.slug) }}" class="hover:text-gold">{{ related.name }}</a>
+                    <a href="{{ url_for('product_detail', slug=related.slug) }}" class="hover:text-coral-deep">{{ related.name }}</a>
                 </h3>
-                <p class="mt-2 text-sm text-slate-100/80">{{ related.impact_note }}</p>
+                <p class="mt-2 text-sm text-ink-soft">{{ related.impact_note }}</p>
                 <div class="mt-auto flex items-center justify-between gap-3 pt-4">
                     <p class="price-tag text-lg"><svg class="icon"><use href="#i-tag"></use></svg>{{ related.price_cents|money }}</p>
                     <a href="{{ url_for('product_detail', slug=related.slug) }}" class="mini-link">Details<svg class="icon"><use href="#i-arrow-right"></use></svg></a>

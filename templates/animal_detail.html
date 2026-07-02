@@ -1,90 +1,112 @@
 {% extends "base.html" %}
 
-{% block title %}Earth and Ocean Guardian | {{ animal.common_name }}{% endblock %}
+{% set is_ocean = animal.realm == "Ocean" %}
+{% set realm_route = 'animals_ocean' if is_ocean else 'animals_land' %}
+
+{% block title %}{{ animal.common_name }} | Earth and Ocean Guardian{% endblock %}
 
 {% block content %}
-<section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]" data-reveal>
-    <article class="glass-panel overflow-hidden">
-        <div class="relative h-80 overflow-hidden md:h-[28rem]">
-            <img src="{{ animal.image_url }}" alt="{{ animal.common_name }}" class="h-full w-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-midnight/90 via-midnight/30 to-transparent"></div>
-            <div class="absolute bottom-4 left-4 right-4">
-                <span class="status-pill">{{ animal.conservation_status }}</span>
-                <h1 class="mt-3 font-display text-4xl md:text-5xl">{{ animal.common_name }}</h1>
-                <p class="mt-2 italic text-slate-100/85">{{ animal.scientific_name }}</p>
-            </div>
-        </div>
+<a href="{{ url_for(realm_route) }}" class="mini-link mb-4 inline-flex" data-reveal><svg class="icon" style="transform: rotate(180deg)"><use href="#i-arrow-right"></use></svg>Back to {{ 'ocean' if is_ocean else 'land' }} animals</a>
 
-        <div class="grid gap-4 p-5 md:grid-cols-2 md:p-6">
-            <div>
-                <p class="text-xs uppercase tracking-[0.14em] text-lime">Species Group</p>
-                <p class="mt-2 text-lg font-semibold">{{ animal.species_group }}</p>
-            </div>
-            <div>
-                <p class="text-xs uppercase tracking-[0.14em] text-lime">Habitat</p>
-                <p class="mt-2 text-lg font-semibold">{{ animal.habitat }}</p>
-            </div>
-            <div class="md:col-span-2">
-                <p class="text-xs uppercase tracking-[0.14em] text-lime">Region</p>
-                <p class="mt-2 text-lg font-semibold">{{ animal.region }}</p>
-            </div>
-            <div class="md:col-span-2">
-                <p class="text-xs uppercase tracking-[0.14em] text-lime">Population Trend</p>
-                <p class="mt-2 text-lg text-slate-100/90">{{ animal.population_trend }}</p>
-            </div>
-            <div class="md:col-span-2 flex flex-wrap gap-3">
-                <a href="{{ url_for('organizations') }}" class="btn-secondary">Donate to partner organizations</a>
-                <a href="{{ url_for('shop') }}" class="btn-secondary">Shop eco products</a>
-            </div>
+<section class="detail-hero {{ 'page-head-ocean' if is_ocean else 'page-head-land' }}" data-reveal>
+    <div class="detail-hero-emoji accent-{{ animal.accent }}">
+        <span aria-hidden="true">{{ animal.emoji }}</span>
+    </div>
+    <div class="detail-hero-info">
+        <span class="status-pill status-{{ animal.conservation_status|lower|replace(' ', '-') }}" style="position: static; display: inline-block;">{{ animal.conservation_status }}</span>
+        <h1 class="mt-3 font-display text-4xl md:text-5xl text-white">{{ animal.common_name }}</h1>
+        <p class="mt-1 italic text-white/85">{{ animal.scientific_name }}</p>
+        <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm font-bold text-white">
+            {% if is_ocean %}&#127754; Ocean animal &middot; SDG 14{% else %}&#127794; Land animal &middot; SDG 15{% endif %}
+        </p>
+    </div>
+</section>
+
+<section class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
+    <article class="quick-fact">
+        <span class="quick-fact-emoji">&#128101;</span>
+        <p class="quick-fact-label">Animal group</p>
+        <p class="quick-fact-value">{{ animal.species_group }}</p>
+    </article>
+    <article class="quick-fact">
+        <span class="quick-fact-emoji">&#127968;</span>
+        <p class="quick-fact-label">Home</p>
+        <p class="quick-fact-value">{{ animal.habitat }}</p>
+    </article>
+    <article class="quick-fact">
+        <span class="quick-fact-emoji">&#127758;</span>
+        <p class="quick-fact-label">Where I live</p>
+        <p class="quick-fact-value">{{ animal.region }}</p>
+    </article>
+    <article class="quick-fact">
+        <span class="quick-fact-emoji">&#128202;</span>
+        <p class="quick-fact-label">How I'm doing</p>
+        <p class="quick-fact-value">{{ animal.conservation_status }}</p>
+    </article>
+</section>
+
+<section class="mt-8 grid gap-5 lg:grid-cols-2">
+    <article class="kid-section kid-fact" data-reveal>
+        <h2 class="kid-title"><span class="kid-emoji">&#128161;</span>Fun Fact!</h2>
+        <p class="mt-3 text-lg">{{ animal.fun_fact }}</p>
+    </article>
+
+    <article class="kid-section kid-why" data-reveal>
+        <h2 class="kid-title"><span class="kid-emoji">&#10067;</span>Why do I need help?</h2>
+        <p class="mt-3">{{ animal.why_endangered }}</p>
+        <p class="mt-4 text-sm font-bold uppercase tracking-wide text-coral-deep">Biggest dangers</p>
+        <div class="mt-2 flex flex-wrap gap-2">
+            {% for threat in animal.threats_list %}
+            <span class="danger-chip">{{ threat }}</span>
+            {% endfor %}
         </div>
     </article>
 
-    <aside class="space-y-6">
-        <article class="glass-panel p-5 md:p-6" data-reveal>
-            <h2 class="font-display text-3xl">Threat factors</h2>
-            <ul class="mt-4 space-y-3">
-                {% for threat in animal.threats_list %}
-                <li class="rounded-xl border border-ember/35 bg-ember/10 px-4 py-3 text-slate-100">{{ threat }}</li>
-                {% endfor %}
-            </ul>
-        </article>
+    <article class="kid-section kid-help" data-reveal>
+        <h2 class="kid-title"><span class="kid-emoji">&#128154;</span>How can YOU help me?</h2>
+        <ul class="mt-3 space-y-2">
+            {% for tip in animal.help_list %}
+            <li class="help-item"><span aria-hidden="true">&#9989;</span><span>{{ tip }}</span></li>
+            {% endfor %}
+        </ul>
+    </article>
 
-        <article class="glass-panel p-5 md:p-6" data-reveal>
-            <h2 class="font-display text-3xl">Action recommendations</h2>
-            <ul class="mt-4 space-y-3">
-                {% for tip in animal.help_list %}
-                <li class="rounded-xl border border-lime/35 bg-lime/10 px-4 py-3 text-slate-100">{{ tip }}</li>
-                {% endfor %}
-            </ul>
-        </article>
-    </aside>
+    <article class="kid-section kid-role" data-reveal>
+        <h2 class="kid-title"><span class="kid-emoji">&#127757;</span>My important job in nature</h2>
+        <p class="mt-3">{{ animal.ecological_role }}</p>
+        {% if animal.population_trend %}
+        <p class="mt-4 rounded-2xl bg-white/70 px-4 py-3 text-sm"><strong>How I'm doing today:</strong> {{ animal.population_trend }}</p>
+        {% endif %}
+    </article>
+</section>
+
+<section class="mt-5" data-reveal>
+    <article class="kid-section kid-sdg">
+        <h2 class="kid-title"><span class="kid-emoji">&#127775;</span>My Global Goal (SDG) connection</h2>
+        <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 font-display text-lg text-grape">{{ animal.sdg.primary }}</p>
+        <p class="mt-3">{{ animal.sdg.text }}</p>
+        <div class="mt-4 flex flex-wrap gap-3">
+            <a href="{{ url_for('organizations') }}" class="btn-primary"><svg class="icon"><use href="#i-heart"></use></svg>Help the helper groups</a>
+            <a href="{{ url_for('quiz') }}" class="btn-secondary"><svg class="icon"><use href="#i-star"></use></svg>Test what I learned</a>
+        </div>
+    </article>
 </section>
 
 <section class="mt-12" data-reveal>
     <div class="section-head">
-        <h2 class="font-display text-3xl md:text-4xl">Related species in similar habitats</h2>
-        <a href="{{ url_for('animals') }}" class="btn-secondary">Back to explorer</a>
+        <span class="section-title-row"><span class="icon-badge"><svg class="icon"><use href="#i-paw"></use></svg></span><h2 class="font-display text-3xl md:text-4xl">More animal friends</h2></span>
+        <a href="{{ url_for(realm_route) }}" class="btn-secondary">See all<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
     </div>
 
     {% if related_animals %}
-    <div class="mt-6 grid gap-5 md:grid-cols-3">
-        {% for related in related_animals %}
-        <article class="feature-card overflow-hidden">
-            <div class="feature-media h-44">
-                <img src="{{ related.image_url }}" alt="{{ related.common_name }}" class="feature-img">
-            </div>
-            <div class="p-4">
-                <p class="text-xs uppercase tracking-[0.14em] text-lime">{{ related.species_group }}</p>
-                <h3 class="mt-2 font-display text-2xl">{{ related.common_name }}</h3>
-                <p class="mt-2 text-sm text-slate-100/80">{{ related.habitat }}</p>
-                <a href="{{ url_for('animal_detail', animal_id=related.id) }}" class="mini-link mt-4">Open profile</a>
-            </div>
-        </article>
+    <div class="mt-6 grid gap-5 sm:grid-cols-2 md:grid-cols-3">
+        {% for animal in related_animals %}
+        {% include "_animal_card.html" %}
         {% endfor %}
     </div>
     {% else %}
     <article class="glass-panel mt-6 p-6 text-center">
-        <p class="text-slate-100/80">No related profiles available for this habitat yet.</p>
+        <p class="text-ink-soft">No animal friends to show here yet.</p>
     </article>
     {% endif %}
 </section>

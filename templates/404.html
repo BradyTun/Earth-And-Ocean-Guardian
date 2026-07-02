@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}Earth and Ocean Guardian | Page Not Found{% endblock %}
+{% block title %}Page Not Found | Earth and Ocean Guardian{% endblock %}
 
 {% block content %}
 <section class="mx-auto max-w-3xl" data-reveal>
     <article class="glass-panel p-8 text-center md:p-12">
-        <p class="eyebrow">404</p>
-        <h1 class="mt-4 font-display text-5xl md:text-6xl">The page could not be located</h1>
-        <p class="mx-auto mt-4 max-w-2xl text-slate-100/80">
-            Continue with species research, organization updates, or impact shopping from the main navigation.
+        <p class="text-7xl">&#128584;</p>
+        <p class="eyebrow mx-auto mt-4">Oops! 404</p>
+        <h1 class="mt-4 font-display text-4xl md:text-6xl">This page went exploring!</h1>
+        <p class="mx-auto mt-4 max-w-2xl text-ink-soft">
+            We could not find that page. Let's go back and meet some amazing animals instead! &#128062;
         </p>
         <div class="mt-7 flex flex-wrap justify-center gap-3">
-            <a href="{{ url_for('home') }}" class="btn-primary">Go to home</a>
-            <a href="{{ url_for('organizations') }}" class="btn-secondary">View organizations</a>
+            <a href="{{ url_for('home') }}" class="btn-primary"><svg class="icon"><use href="#i-home"></use></svg>Go home</a>
+            <a href="{{ url_for('animals') }}" class="btn-secondary"><svg class="icon"><use href="#i-paw"></use></svg>Meet the animals</a>
         </div>
     </article>
 </section>

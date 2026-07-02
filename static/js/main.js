@@ -227,12 +227,57 @@ function initAssistantChat() {
             if (!message) {
                 return;
             }
-            chatInput.value = "";
+            clearPlaceholder();
+            openWidget();
             await sendMessage(message);
         });
     });
 
-    loadHistory();
+    // ------------------------------------------------------------------
+    // Floating widget open/close (Guardian Buddy is on every page)
+    // ------------------------------------------------------------------
+    const fab = document.getElementById("aiFab");
+    const widget = document.getElementById("aiWidget");
+    const closeBtn = document.getElementById("aiClose");
+    let historyLoaded = false;
+
+    function openWidget() {
+        if (!widget || !fab) {
+            return;
+        }
+        widget.classList.add("is-open");
+        widget.setAttribute("aria-hidden", "false");
+        fab.classList.add("is-hidden");
+        if (!historyLoaded) {
+            historyLoaded = true;
+            loadHistory();
+        }
+        window.setTimeout(() => chatInput.focus(), 240);
+    }
+
+    function closeWidget() {
+        if (!widget || !fab) {
+            return;
+        }
+        widget.classList.remove("is-open");
+        widget.setAttribute("aria-hidden", "true");
+        fab.classList.remove("is-hidden");
+    }
+
+    if (fab) {
+        fab.addEventListener("click", openWidget);
+    }
+    if (closeBtn) {
+        closeBtn.addEventListener("click", closeWidget);
+    }
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && widget && widget.classList.contains("is-open")) {
+            closeWidget();
+            fab && fab.focus();
+        }
+    });
+
+    ensureNonEmptyPlaceholder();
 }
 
 initAssistantChat();
@@ -310,6 +355,169 @@ function initQuantitySteppers() {
 }
 
 initQuantitySteppers();
+
+/* ----------------------------------------------------------------------
+   Animal Quiz game
+---------------------------------------------------------------------- */
+function initQuiz() {
+    const mount = document.getElementById("quizApp");
+    const dataNode = document.getElementById("quizData");
+    if (!mount || !dataNode) {
+        return;
+    }
+
+    let questions = [];
+    try {
+        questions = JSON.parse(dataNode.textContent || "[]");
+    } catch (_error) {
+        questions = [];
+    }
+    if (!Array.isArray(questions) || questions.length === 0) {
+        return;
+    }
+
+    const letters = ["A", "B", "C", "D"];
+    let current = 0;
+    let score = 0;
+    let locked = false;
+
+    const encourage = (isCorrect) =>
+        isCorrect
+            ? ["Woohoo! That's right! 🎉", "Awesome job! 🌟", "You got it! 🥳", "Brilliant! 🐾"][Math.floor(Math.random() * 4)]
+            : "Good try! Let's learn this one together. 💚";
+
+    function render() {
+        const q = questions[current];
+        const total = questions.length;
+        const badge = q.category === "Ocean" ? "🌊 Ocean" : "🌿 Land";
+
+        const optionsHtml = q.options
+            .map(
+                (option, index) =>
+                    `<button type="button" class="quiz-option" data-index="${index}">
+                        <span class="opt-key">${q.type === "tf" ? (index === 0 ? "✓" : "✗") : letters[index]}</span>
+                        <span>${option}</span>
+                    </button>`
+            )
+            .join("");
+
+        mount.innerHTML = `
+            <div class="quiz-progress">
+                <span>${badge}</span>
+                <span>Question ${current + 1} of ${total}</span>
+                <span>Score: ${score}</span>
+            </div>
+            <div class="quiz-progress-bar"><i style="width:${((current) / total) * 100}%"></i></div>
+            <h2 class="quiz-question font-display">${q.question}</h2>
+            <div class="quiz-options">${optionsHtml}</div>
+            <div class="quiz-feedback" id="quizFeedback"></div>
+            <div class="quiz-actions" id="quizActions"></div>
+        `;
+
+        locked = false;
+        mount.querySelectorAll(".quiz-option").forEach((button) => {
+            button.addEventListener("click", () => handleAnswer(button));
+        });
+    }
+
+    function handleAnswer(button) {
+        if (locked) {
+            return;
+        }
+        locked = true;
+
+        const q = questions[current];
+        const chosen = Number(button.dataset.index);
+        const correctIndex = q.answer_index;
+        const isCorrect = chosen === correctIndex;
+
+        if (isCorrect) {
+            score += 1;
+        }
+
+        mount.querySelectorAll(".quiz-option").forEach((node) => {
+            const idx = Number(node.dataset.index);
+            node.disabled = true;
+            if (idx === correctIndex) {
+                node.classList.add("is-correct");
+            } else if (idx === chosen) {
+                node.classList.add("is-wrong");
+            }
+        });
+
+        const feedback = document.getElementById("quizFeedback");
+        if (feedback) {
+            feedback.textContent = encourage(isCorrect);
+            feedback.classList.add("show", isCorrect ? "good" : "bad");
+        }
+
+        const actions = document.getElementById("quizActions");
+        if (actions) {
+            const isLast = current === questions.length - 1;
+            const nextBtn = document.createElement("button");
+            nextBtn.type = "button";
+            nextBtn.className = "btn-primary";
+            nextBtn.innerHTML = isLast
+                ? 'See my score<svg class="icon"><use href="#i-star"></use></svg>'
+                : 'Next question<svg class="icon"><use href="#i-arrow-right"></use></svg>';
+            nextBtn.addEventListener("click", () => {
+                if (isLast) {
+                    showResult();
+                } else {
+                    current += 1;
+                    render();
+                }
+            });
+            actions.appendChild(nextBtn);
+        }
+    }
+
+    function showResult() {
+        const total = questions.length;
+        const pct = Math.round((score / total) * 100);
+        let emoji = "🌟";
+        let title = "Great effort!";
+        if (pct === 100) {
+            emoji = "🏆";
+            title = "Perfect score! You are an Animal Hero!";
+        } else if (pct >= 70) {
+            emoji = "🎉";
+            title = "Amazing work, Guardian!";
+        } else if (pct >= 40) {
+            emoji = "🐾";
+            title = "Nice job! Keep learning!";
+        } else {
+            emoji = "🌱";
+            title = "Good start! Try again to grow your score!";
+        }
+
+        mount.innerHTML = `
+            <div class="quiz-result">
+                <div class="quiz-emoji-big">${emoji}</div>
+                <p class="score-badge">${score} / ${total}</p>
+                <h2 class="font-display text-2xl mt-2">${title}</h2>
+                <p class="mt-2 text-ink-soft">You answered ${pct}% correctly. Every question helps our planet's animals! 💚</p>
+                <div class="quiz-actions mt-5">
+                    <button type="button" class="btn-primary" id="quizRestart"><svg class="icon"><use href="#i-star"></use></svg>Play again</button>
+                    <a href="/animals" class="btn-secondary"><svg class="icon"><use href="#i-paw"></use></svg>Meet the animals</a>
+                </div>
+            </div>
+        `;
+
+        const restart = document.getElementById("quizRestart");
+        if (restart) {
+            restart.addEventListener("click", () => {
+                current = 0;
+                score = 0;
+                render();
+            });
+        }
+    }
+
+    render();
+}
+
+initQuiz();
 
 /* ----------------------------------------------------------------------
    AJAX add-to-cart (no page refresh)

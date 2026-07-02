@@ -1,31 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}Earth and Ocean Guardian | Species Explorer{% endblock %}
+{% set is_ocean = realm == "Ocean" %}
+{% set realm_route = 'animals_ocean' if is_ocean else 'animals_land' %}
+
+{% block title %}{{ realm }} Animals | Earth and Ocean Guardian{% endblock %}
 
 {% block content %}
 <section class="space-y-6">
-    <div data-reveal>
-        <p class="eyebrow"><svg class="icon"><use href="#i-paw"></use></svg>Species Explorer</p>
-        <h1 class="mt-2 font-display text-4xl md:text-5xl">Endangered Animal Database</h1>
-        <p class="mt-3 max-w-3xl text-slate-100/90">Filter by habitat and conservation status to study where extinction pressure is highest.</p>
+    <div class="page-head {{ 'page-head-ocean' if is_ocean else 'page-head-land' }}" data-reveal>
+        <a href="{{ url_for('animals') }}" class="mini-link mb-2 inline-flex text-white/90"><svg class="icon" style="transform: rotate(180deg)"><use href="#i-arrow-right"></use></svg>Back to all animals</a>
+        <p class="eyebrow-solid">{% if is_ocean %}&#127754; SDG 14 &middot; Life Below Water{% else %}&#127794; SDG 15 &middot; Life on Land{% endif %}</p>
+        <h1 class="mt-3 font-display text-4xl md:text-5xl text-white">{% if is_ocean %}Ocean Animals{% else %}Land Animals{% endif %}</h1>
+        <p class="mt-3 max-w-2xl text-white/90">
+            {% if is_ocean %}Splash into the sea and meet these ocean friends! Use the search box to find an animal by name, home, or how endangered it is. &#128011;{% else %}Roam the forests, mountains and grasslands to meet these land friends! Search by name, home, or how endangered they are. &#128047;{% endif %}
+        </p>
     </div>
 
-    <form method="get" class="glass-panel grid gap-3 p-4 md:grid-cols-4 md:p-5" data-reveal>
+    <form method="get" action="{{ url_for(realm_route) }}" class="glass-panel grid gap-3 p-4 md:grid-cols-4 md:p-5" data-reveal>
         <label class="md:col-span-2">
-            <span class="sr-only">Search animals</span>
+            <span class="form-label">Search</span>
             <input
                 type="text"
                 name="search"
                 value="{{ filters.search }}"
-                placeholder="Search by species, region, or threat"
+                placeholder="Type an animal name..."
                 class="field-input"
             >
         </label>
 
         <label>
-            <span class="sr-only">Habitat</span>
+            <span class="form-label">Home</span>
             <select name="habitat" class="field-input">
-                <option value="">All habitats</option>
+                <option value="">All homes</option>
                 {% for habitat_option in habitats %}
                 <option value="{{ habitat_option }}" {% if filters.habitat == habitat_option %}selected{% endif %}>{{ habitat_option }}</option>
                 {% endfor %}
@@ -33,54 +39,35 @@
         </label>
 
         <label>
-            <span class="sr-only">Conservation status</span>
+            <span class="form-label">Danger level</span>
             <select name="status" class="field-input">
-                <option value="">All statuses</option>
+                <option value="">All levels</option>
                 {% for status_option in statuses %}
                 <option value="{{ status_option }}" {% if filters.status == status_option %}selected{% endif %}>{{ status_option }}</option>
                 {% endfor %}
             </select>
         </label>
 
-        <button type="submit" class="btn-primary">Apply filters</button>
-        <a href="{{ url_for('animals') }}" class="btn-secondary text-center">Reset</a>
+        <button type="submit" class="btn-primary"><svg class="icon"><use href="#i-filter"></use></svg>Search</button>
+        <a href="{{ url_for(realm_route) }}" class="btn-secondary text-center">Show all</a>
     </form>
 
-    <p class="text-sm text-slate-100/80" data-reveal>{{ animals|length }} animal profiles found</p>
+    <p class="text-sm font-bold text-ink-soft" data-reveal>{{ animals|length }} animal{{ '' if animals|length == 1 else 's' }} to meet &#128064;</p>
 
     {% if animals %}
-    <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {% for animal in animals %}
-        {% set status_class = "bg-rose-600 text-white" if animal.conservation_status == "Critically Endangered" else "bg-gold text-midnight" %}
-        <article class="feature-card" data-reveal>
-            <div class="feature-media h-56">
-                <img src="{{ animal.image_url }}" alt="{{ animal.common_name }}" class="feature-img">
-                <span class="absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide {{ status_class }}">{{ animal.conservation_status }}</span>
-            </div>
-
-            <div class="p-4">
-                <p class="text-xs uppercase tracking-[0.14em] text-lime">{{ animal.species_group }}</p>
-                <h2 class="mt-2 font-display text-3xl leading-tight">{{ animal.common_name }}</h2>
-                <p class="mt-1 italic text-slate-100/80">{{ animal.scientific_name }}</p>
-                <p class="mt-3 text-sm text-slate-100/85">Habitat: {{ animal.habitat }}</p>
-                <p class="mt-1 text-sm text-slate-100/75">Region: {{ animal.region }}</p>
-
-                <div class="mt-4 flex flex-wrap gap-2">
-                    {% for threat in animal.threats_list[:2] %}
-                    <span class="rounded-full border border-ember/40 bg-ember/10 px-3 py-1 text-xs text-ember">{{ threat }}</span>
-                    {% endfor %}
-                </div>
-
-                <a href="{{ url_for('animal_detail', animal_id=animal.id) }}" class="mini-link mt-5">View full profile<svg class="icon"><use href="#i-arrow-right"></use></svg></a>
-            </div>
-        </article>
+        <div data-reveal>
+            {% include "_animal_card.html" %}
+        </div>
         {% endfor %}
     </div>
     {% else %}
     <article class="glass-panel p-8 text-center" data-reveal>
-        <h2 class="font-display text-3xl">No profile matches your filters</h2>
-        <p class="mt-3 text-slate-100/80">Try broader keywords or reset filter selections to view all species.</p>
-        <a href="{{ url_for('animals') }}" class="btn-secondary mt-5 inline-flex">Reset filters</a>
+        <p class="text-5xl">&#128373;&#65039;</p>
+        <h2 class="mt-3 font-display text-3xl">Hmm, no animals found</h2>
+        <p class="mt-3 text-ink-soft">Try a different word or show all the animals again.</p>
+        <a href="{{ url_for(realm_route) }}" class="btn-primary mt-5 inline-flex"><svg class="icon"><use href="#i-paw"></use></svg>Show all animals</a>
     </article>
     {% endif %}
 </section>
