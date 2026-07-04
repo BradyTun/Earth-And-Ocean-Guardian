@@ -89,6 +89,7 @@
         <article class="feature-card group">
             <div class="critter-media accent-{{ animal.accent }}">
                 <span class="critter-emoji" aria-hidden="true">{{ animal.emoji }}</span>
+                {% if animal.image_url %}<img src="{{ animal.image_url }}" alt="Photo of {{ animal.common_name }}" class="critter-photo js-animal-photo" loading="lazy">{% endif %}
                 <span class="status-pill status-{{ animal.conservation_status|lower|replace(' ', '-') }}">{{ animal.conservation_status }}</span>
             </div>
             <div class="p-4">

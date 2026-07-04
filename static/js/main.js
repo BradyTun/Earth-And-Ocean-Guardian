@@ -31,6 +31,15 @@ if (document.readyState === "complete") {
     });
 }
 
+// If an animal photo fails to load, remove it so the emoji fallback shows.
+document.querySelectorAll("img.js-animal-photo").forEach((img) => {
+    const drop = () => img.remove();
+    img.addEventListener("error", drop);
+    if (img.complete && img.naturalWidth === 0) {
+        drop();
+    }
+});
+
 const revealElements = document.querySelectorAll("[data-reveal]");
 if (revealElements.length > 0) {
     const observer = new IntersectionObserver(

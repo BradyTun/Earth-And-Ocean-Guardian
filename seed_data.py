@@ -1434,11 +1434,103 @@ OCEAN_ANIMALS: list[dict[str, Any]] = [
 ]
 
 
-# Tag each animal with its realm so the app can split Land and Ocean pages.
+# Real animal photos from Wikimedia Commons, at standard 500px (hotlink-safe)
+# widths. A few very rare species use an illustration where no wild photo exists.
+ANIMAL_IMAGES: dict[str, str] = {
+    "Myanmar Snub-nosed Monkey": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Drawing_of_Rhinopithecus_strykeri.jpg",
+    "Asian Elephant": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Elephas_maximus_%28Bandipur%29.jpg/500px-Elephas_maximus_%28Bandipur%29.jpg",
+    "Bengal Tiger": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Bengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg/500px-Bengal_tiger_%28Panthera_tigris_tigris%29_female_3_crop.jpg",
+    "Clouded Leopard": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Neofelis_nebulosa%2C_Clouded_leopard.jpg/500px-Neofelis_nebulosa%2C_Clouded_leopard.jpg",
+    "Sunda Pangolin": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Pangolin_borneo.jpg/500px-Pangolin_borneo.jpg",
+    "Malayan Tapir": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Schabrackentapir_Tapirus_indicus_Tiergarten-Nuernberg-1.jpg/500px-Schabrackentapir_Tapirus_indicus_Tiergarten-Nuernberg-1.jpg",
+    "Sun Bear": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Sun-bear.jpg/500px-Sun-bear.jpg",
+    "Western Hoolock Gibbon": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Hoolock_hoolock_001.jpg/500px-Hoolock_hoolock_001.jpg",
+    "Asiatic Black Bear": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Ursus_thibetanus_3_%28Wroclaw_zoo%29.JPG/500px-Ursus_thibetanus_3_%28Wroclaw_zoo%29.JPG",
+    "Fishing Cat": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Prionailurus_viverrinus_01.jpg/500px-Prionailurus_viverrinus_01.jpg",
+    "Dhole": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Dhole_%28Asiatic_wild_dog%29_cropped.jpg/500px-Dhole_%28Asiatic_wild_dog%29_cropped.jpg",
+    "Gaur": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Indian_Gaur_from_anaimalai_hills_JEG5290.jpg/500px-Indian_Gaur_from_anaimalai_hills_JEG5290.jpg",
+    "Eld's Deer": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Panolia_eldii_thamin.jpg/500px-Panolia_eldii_thamin.jpg",
+    "Banteng": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Banteng_Alas_Purwo.jpg/500px-Banteng_Alas_Purwo.jpg",
+    "Red Panda": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Red_Panda%2C_Gentle_Tree-Dweller_of_the_Himalayas.jpg/500px-Red_Panda%2C_Gentle_Tree-Dweller_of_the_Himalayas.jpg",
+    "Asian Golden Cat": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Asian_Golden_cat.jpg/500px-Asian_Golden_cat.jpg",
+    "Leopard Cat": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Prionailurus_bengalensis_bengalensis_2-D%C3%A9coupe.JPG/500px-Prionailurus_bengalensis_bengalensis_2-D%C3%A9coupe.JPG",
+    "Bengal Slow Loris": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Captive_N._bengalensis_from_Laos_with_6-week_baby.JPG/500px-Captive_N._bengalensis_from_Laos_with_6-week_baby.JPG",
+    "Hog Deer": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Hog_deer12.jpg/500px-Hog_deer12.jpg",
+    "Indochinese Leopard": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Indochinese_leopard.jpg/500px-Indochinese_leopard.jpg",
+    "Amur Leopard": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Panthera_pardus_orientalis_Colchester_Zoo_%281%29.jpg/500px-Panthera_pardus_orientalis_Colchester_Zoo_%281%29.jpg",
+    "Sumatran Orangutan": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Sumatra-Orang-Utan_im_Pongoland.jpg/500px-Sumatra-Orang-Utan_im_Pongoland.jpg",
+    "Mountain Gorilla": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Susa_group%2C_mountain_gorilla.jpg/500px-Susa_group%2C_mountain_gorilla.jpg",
+    "Sunda Tiger": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Sumatran_Tiger_Berlin_Tierpark.jpg/500px-Sumatran_Tiger_Berlin_Tierpark.jpg",
+    "Black Rhinoceros": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Black_Rhino_at_Working_with_Wildlife.jpg/500px-Black_Rhino_at_Working_with_Wildlife.jpg",
+    "Addax": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/A_big_male_Addax_showing_as_the_power_of_his_horns.jpg/500px-A_big_male_Addax_showing_as_the_power_of_his_horns.jpg",
+    "African Wild Dog": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/African_Wild_Dog_at_Working_with_Wildlife.jpg/500px-African_Wild_Dog_at_Working_with_Wildlife.jpg",
+    "Saola": "https://upload.wikimedia.org/wikipedia/commons/7/73/Pseudoryx_nghetinhensis%2C_b.PNG",
+    "California Condor": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/California-condor-gymnogyps-californianus-078_%2821196759264%29.jpg/500px-California-condor-gymnogyps-californianus-078_%2821196759264%29.jpg",
+    "Kakapo": "https://upload.wikimedia.org/wikipedia/commons/a/aa/Sirocco_full_length_portrait.jpg",
+    "Iberian Lynx": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Lince_ib%C3%A9rico_%28Lynx_pardinus%29%2C_Almuradiel%2C_Ciudad_Real%2C_Espa%C3%B1a%2C_2021-12-19%2C_DD_07.jpg/500px-Lince_ib%C3%A9rico_%28Lynx_pardinus%29%2C_Almuradiel%2C_Ciudad_Real%2C_Espa%C3%B1a%2C_2021-12-19%2C_DD_07.jpg",
+    "Chimpanzee": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/015_Chimpanzee_at_Kibale_forest_National_Park_Photo_by_Giles_Laurent.jpg/500px-015_Chimpanzee_at_Kibale_forest_National_Park_Photo_by_Giles_Laurent.jpg",
+    "Przewalski's Horse": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Przewalskis_horse_02.jpg/500px-Przewalskis_horse_02.jpg",
+    "Cross River Gorilla": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Cross_river_gorilla.jpg",
+    "Cheetah": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Male_cheetah_facing_left_in_South_Africa.jpg/500px-Male_cheetah_facing_left_in_South_Africa.jpg",
+    "Black-Footed Ferret": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Mustela_nigripes_2.jpg/500px-Mustela_nigripes_2.jpg",
+    "Golden Lion Tamarin": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Leontopithecus_rosalia_-_Copenhagen_Zoo_-_DSC09082.JPG/500px-Leontopithecus_rosalia_-_Copenhagen_Zoo_-_DSC09082.JPG",
+    "Gharial": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Gharial_%28Gavialis_gangeticus%29_male.jpg/500px-Gharial_%28Gavialis_gangeticus%29_male.jpg",
+    "Giant Panda": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Grosser_Panda.JPG/500px-Grosser_Panda.JPG",
+    "Greater Flamingo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/010_Greater_flamingos_male_and_female_in_the_Camargue_during_mating_season_Photo_by_Giles_Laurent.jpg/500px-010_Greater_flamingos_male_and_female_in_the_Camargue_during_mating_season_Photo_by_Giles_Laurent.jpg",
+    "King Cobra": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/12_-_The_Mystical_King_Cobra_and_Coffee_Forests.jpg/500px-12_-_The_Mystical_King_Cobra_and_Coffee_Forests.jpg",
+    "Malayan Tiger": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/MalayanTiger.jpg/500px-MalayanTiger.jpg",
+    "Ostrich": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Struthio_camelus_-_Etosha_2014_%283%29.jpg/500px-Struthio_camelus_-_Etosha_2014_%283%29.jpg",
+    "Dugong": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Dugong.JPG/500px-Dugong.JPG",
+    "Whale Shark": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Similan_Dive_Center_-_great_whale_shark.jpg/500px-Similan_Dive_Center_-_great_whale_shark.jpg",
+    "Hawksbill Sea Turtle": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Eretmochelys-imbricata-K%C3%A9lonia-2.JPG/500px-Eretmochelys-imbricata-K%C3%A9lonia-2.JPG",
+    "Green Sea Turtle": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Green_sea_turtle_%28Chelonia_mydas%29_Moorea.jpg/500px-Green_sea_turtle_%28Chelonia_mydas%29_Moorea.jpg",
+    "Leatherback Sea Turtle": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Leatherback_sea_turtle_Tinglar%2C_USVI_%285839996547%29.jpg/500px-Leatherback_sea_turtle_Tinglar%2C_USVI_%285839996547%29.jpg",
+    "Olive Ridley Sea Turtle": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Lepidochelys-olivacea-K%C3%A9lonia-1.JPG/500px-Lepidochelys-olivacea-K%C3%A9lonia-1.JPG",
+    "Ayeyarwady Dolphin": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Irrawaddy_dolphin-Orcaella_brevirostris_by_2eight.jpg/500px-Irrawaddy_dolphin-Orcaella_brevirostris_by_2eight.jpg",
+    "Indo-Pacific Humpback Dolphin": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Pink_Dolphin.JPG/500px-Pink_Dolphin.JPG",
+    "Indo-Pacific Finless Porpoise": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Neophocaena_phocaenoides_-Miyajima_Aquarium_-Japan-8a.jpg/500px-Neophocaena_phocaenoides_-Miyajima_Aquarium_-Japan-8a.jpg",
+    "Scalloped Hammerhead Shark": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Scalloped_Hammerhead_Shark_Sphyrna_Lewini_%28226845659%29.jpeg/500px-Scalloped_Hammerhead_Shark_Sphyrna_Lewini_%28226845659%29.jpeg",
+    "Great Hammerhead Shark": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Great_hammerhead2.jpg/500px-Great_hammerhead2.jpg",
+    "Oceanic Whitetip Shark": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Oceanic_Whitetip_Shark_%28cropped%29.jpg/500px-Oceanic_Whitetip_Shark_%28cropped%29.jpg",
+    "Giant Manta Ray": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Manta_birostris-Thailand4.jpg/500px-Manta_birostris-Thailand4.jpg",
+    "Reef Manta Ray": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Dharavandhoo_Thila_-_Manata_Black_Pearl.JPG/500px-Dharavandhoo_Thila_-_Manata_Black_Pearl.JPG",
+    "Napoleon Wrasse": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Cheilinus_undulatus_Maldives.JPG/500px-Cheilinus_undulatus_Maldives.JPG",
+    "Bowmouth Guitarfish": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Rhina_ancylostoma-2.jpg/500px-Rhina_ancylostoma-2.jpg",
+    "Largetooth Sawfish": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/2009_Pristis_microdon1.JPG/500px-2009_Pristis_microdon1.JPG",
+    "Narrow Sawfish": "https://upload.wikimedia.org/wikipedia/commons/6/6f/AnoxypristisCuspidataCSIRO.jpg",
+    "Blue Whale": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Anim1754_-_Flickr_-_NOAA_Photo_Library.jpg/500px-Anim1754_-_Flickr_-_NOAA_Photo_Library.jpg",
+    "Bryde's Whale": "https://upload.wikimedia.org/wikipedia/commons/3/35/Balaenoptera_brydei.jpg",
+    "Vaquita": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Vaquita4_Olson_NOAA.jpg/500px-Vaquita4_Olson_NOAA.jpg",
+    "North Atlantic Right Whale": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/GRNMS_-_Right_Whales_%2831361234602%29.jpg/500px-GRNMS_-_Right_Whales_%2831361234602%29.jpg",
+    "Sei Whale": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Sei_whale_mother_and_calf_Christin_Khan_NOAA.jpg/500px-Sei_whale_mother_and_calf_Christin_Khan_NOAA.jpg",
+    "Sperm Whale": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Mother_and_baby_sperm_whale.jpg/500px-Mother_and_baby_sperm_whale.jpg",
+    "Shortfin Mako Shark": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Shortfin_mako_%28Isurus_oxyrinchus%29.jpg/500px-Shortfin_mako_%28Isurus_oxyrinchus%29.jpg",
+    "False Killer Whale": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Pseudoorca_Crassidens_-_False_Killer_Whale.jpg/500px-Pseudoorca_Crassidens_-_False_Killer_Whale.jpg",
+    "Spinner Dolphin": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/A_spinner_dolphin_in_the_Red_Sea.jpg/500px-A_spinner_dolphin_in_the_Red_Sea.jpg",
+    "Dusky Shark": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Carcharhinus_obscurus_at_Seaworld.jpg/500px-Carcharhinus_obscurus_at_Seaworld.jpg",
+    "Sand Tiger Shark": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Carcharias_taurus_SI.jpg/500px-Carcharias_taurus_SI.jpg",
+    "Tiger Shark": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Tiger_shark.jpg/500px-Tiger_shark.jpg",
+    "Reef Devil Ray": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Mobula_kuhlii.jpg/500px-Mobula_kuhlii.jpg",
+    "Giant Guitarfish": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Glaucostegus_typus.jpg/500px-Glaucostegus_typus.jpg",
+    "Green Humphead Parrotfish": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Bolbometopon_muricatum_290186802.jpg/500px-Bolbometopon_muricatum_290186802.jpg",
+    "Smalltooth Sawfish": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Pristis_pectinata_SI.jpg/500px-Pristis_pectinata_SI.jpg",
+    "Chambered Nautilus": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Nautilus_pompilius_%28detail%29.jpg/500px-Nautilus_pompilius_%28detail%29.jpg",
+    "Giant Triton Snail": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Caracola_marina_%28Charonia_Tritonis%29%2C_Cynthiana%2C_Pafos%2C_Chipre%2C_2021-12-11%2C_DD_14.jpg/500px-Caracola_marina_%28Charonia_Tritonis%29%2C_Cynthiana%2C_Pafos%2C_Chipre%2C_2021-12-11%2C_DD_14.jpg",
+    "European Eel": "https://upload.wikimedia.org/wikipedia/commons/5/58/Anguilla_anguilla.jpg",
+    "Beluga Sturgeon": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/%D0%91%D1%96%D0%BB%D1%83%D0%B3%D0%B0_%28Huso_huso%29.jpg/500px-%D0%91%D1%96%D0%BB%D1%83%D0%B3%D0%B0_%28Huso_huso%29.jpg",
+    "Atlantic Bluefin Tuna": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Bluefin-big.jpg/500px-Bluefin-big.jpg",
+    "Ocean Sunfish": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Mola_mola.jpg/500px-Mola_mola.jpg",
+}
+
+
+# Tag each animal with its realm and attach its real photo so the pages can
+# show them (Land vs Ocean split plus card and detail images).
 for _land_animal in LAND_ANIMALS:
     _land_animal.setdefault("realm", "Land")
+    _land_animal.setdefault("image_url", ANIMAL_IMAGES.get(_land_animal["common_name"], ""))
 for _ocean_animal in OCEAN_ANIMALS:
     _ocean_animal.setdefault("realm", "Ocean")
+    _ocean_animal.setdefault("image_url", ANIMAL_IMAGES.get(_ocean_animal["common_name"], ""))
 
 
 ALL_ANIMALS: list[dict[str, Any]] = LAND_ANIMALS + OCEAN_ANIMALS

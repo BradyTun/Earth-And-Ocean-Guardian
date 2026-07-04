@@ -11,6 +11,7 @@
 <section class="detail-hero {{ 'page-head-ocean' if is_ocean else 'page-head-land' }}" data-reveal>
     <div class="detail-hero-emoji accent-{{ animal.accent }}">
         <span aria-hidden="true">{{ animal.emoji }}</span>
+        {% if animal.image_url %}<img src="{{ animal.image_url }}" alt="Photo of {{ animal.common_name }}" class="detail-hero-photo js-animal-photo" loading="lazy">{% endif %}
     </div>
     <div class="detail-hero-info">
         <span class="status-pill status-{{ animal.conservation_status|lower|replace(' ', '-') }}" style="position: static; display: inline-block;">{{ animal.conservation_status }}</span>
