@@ -1167,6 +1167,29 @@ select.field-input {
     border-color: rgba(138, 111, 214, 0.4);
 }
 
+.sdg-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    background: #fff;
+    padding: 0.4rem 0.9rem;
+    font-family: "Fredoka", "Baloo 2", sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    border: 2px solid transparent;
+}
+
+.sdg-badge-nature {
+    color: var(--grape);
+    border-color: rgba(138, 111, 214, 0.4);
+}
+
+.sdg-badge-edu {
+    color: var(--sky-deep);
+    border-color: rgba(31, 166, 224, 0.4);
+}
+
 .danger-chip {
     display: inline-flex;
     align-items: center;

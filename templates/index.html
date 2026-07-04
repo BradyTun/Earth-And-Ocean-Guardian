@@ -7,38 +7,17 @@
     <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
     <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
 
-    <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-        <div>
-            <p class="eyebrow">&#127757; Be an Animal Hero</p>
-            <h1 class="mt-4 font-display text-4xl leading-tight md:text-6xl">Learn about amazing animals and help keep them safe!</h1>
-            <p class="mt-5 max-w-2xl text-lg text-ink-soft">
-                Meet 80 special animals from the land and the sea. Find out where they live, why they need our help, and easy things <em>you</em> can do to protect them. &#128062;&#127754;
-            </p>
-            <div class="mt-8 flex flex-wrap gap-3">
-                <a href="{{ url_for('animals_land') }}" class="btn-primary"><svg class="icon"><use href="#i-leaf"></use></svg>Meet land animals</a>
-                <a href="{{ url_for('animals_ocean') }}" class="btn-secondary"><svg class="icon"><use href="#i-wave"></use></svg>Meet ocean animals</a>
-                <a href="{{ url_for('quiz') }}" class="btn-secondary"><svg class="icon"><use href="#i-star"></use></svg>Play the quiz</a>
-            </div>
+    <div class="max-w-3xl">
+        <p class="eyebrow">&#127757; Be an Animal Hero</p>
+        <h1 class="mt-4 font-display text-4xl leading-tight md:text-6xl">Learn about amazing animals and help keep them safe!</h1>
+        <p class="mt-5 max-w-2xl text-lg text-ink-soft">
+            Meet 80 special animals from the land and the sea. Find out where they live, why they need our help, and easy things <em>you</em> can do to protect them. &#128062;&#127754;
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+            <a href="{{ url_for('animals_land') }}" class="btn-primary"><svg class="icon"><use href="#i-leaf"></use></svg>Meet land animals</a>
+            <a href="{{ url_for('animals_ocean') }}" class="btn-secondary"><svg class="icon"><use href="#i-wave"></use></svg>Meet ocean animals</a>
+            <a href="{{ url_for('quiz') }}" class="btn-secondary"><svg class="icon"><use href="#i-star"></use></svg>Play the quiz</a>
         </div>
-
-        <aside class="hero-stats">
-            <article class="stat-block">
-                <p>Animal Friends</p>
-                <strong class="counter" data-count="{{ stats.total_animals }}">0</strong>
-            </article>
-            <article class="stat-block">
-                <p>Helper Groups</p>
-                <strong class="counter" data-count="{{ stats.total_organizations }}">0</strong>
-            </article>
-            <article class="stat-block">
-                <p>Eco Goodies</p>
-                <strong class="counter" data-count="{{ stats.total_products }}">0</strong>
-            </article>
-            <article class="stat-block">
-                <p>Quiz Questions</p>
-                <strong class="counter" data-count="{{ stats.total_quiz_questions }}">0</strong>
-            </article>
-        </aside>
     </div>
 </section>
 

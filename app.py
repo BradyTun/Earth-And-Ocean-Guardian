@@ -402,10 +402,16 @@ def sdg_connection_for(realm: str) -> dict[str, str]:
     if realm == "Ocean":
         return {
             "primary": "SDG 14 - Life Below Water",
+            "primary_emoji": "\U0001F30A",
+            "education": "SDG 4 - Quality Education",
+            "education_emoji": "\U0001F4DA",
             "text": "Keeping this animal safe helps the whole ocean stay healthy and full of life (SDG 14). Learning and sharing its story is part of Quality Education (SDG 4).",
         }
     return {
         "primary": "SDG 15 - Life on Land",
+        "primary_emoji": "\U0001F33F",
+        "education": "SDG 4 - Quality Education",
+        "education_emoji": "\U0001F4DA",
         "text": "Protecting this animal helps forests, grasslands and other land habitats stay healthy (SDG 15). Learning and sharing its story is part of Quality Education (SDG 4).",
     }
 

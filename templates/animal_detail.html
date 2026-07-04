@@ -84,7 +84,10 @@
 <section class="mt-5" data-reveal>
     <article class="kid-section kid-sdg">
         <h2 class="kid-title"><span class="kid-emoji">&#127775;</span>My Global Goal (SDG) connection</h2>
-        <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 font-display text-lg text-grape">{{ animal.sdg.primary }}</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <span class="sdg-badge sdg-badge-nature">{{ animal.sdg.primary_emoji }} {{ animal.sdg.primary }}</span>
+            <span class="sdg-badge sdg-badge-edu">{{ animal.sdg.education_emoji }} {{ animal.sdg.education }}</span>
+        </div>
         <p class="mt-3">{{ animal.sdg.text }}</p>
         <div class="mt-4 flex flex-wrap gap-3">
             <a href="{{ url_for('organizations') }}" class="btn-primary"><svg class="icon"><use href="#i-heart"></use></svg>Help the helper groups</a>
