@@ -1858,17 +1858,6 @@ SAMPLE_PRODUCTS: list[dict[str, Any]] = [
         "image_url": "https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=1200&q=80",
         "is_active": True,
     },
-    {
-        "name": "Fairtrade Organic Cotton Tote",
-        "slug": "fairtrade-organic-cotton-tote",
-        "description": "Durable organic cotton tote for shopping and travel, reducing dependence on disposable bags.",
-        "impact_note": "Each order contributes directly to species recovery organizations.",
-        "category": "Daily Essentials",
-        "price_cents": 1800,
-        "stock_quantity": 210,
-        "image_url": "https://images.unsplash.com/photo-1597484661643-2f5fef640dd3?auto=format&fit=crop&w=1200&q=80",
-        "is_active": True,
-    },
 ]
 
 
